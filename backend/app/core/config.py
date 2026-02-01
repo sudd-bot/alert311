@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from pydantic import Field
 from typing import Optional
 
 
@@ -23,9 +24,9 @@ class Settings(BaseSettings):
     TWILIO_VERIFY_SERVICE_SID: str  # For phone verification
     TWILIO_FROM_NUMBER: Optional[str] = None  # For sending SMS alerts
     
-    # Report Types (can expand later)
-    DEFAULT_REPORT_TYPE_ID: str = "963f1454-7c22-43be-aacb-3f34ae5d0dc7"  # Parking on sidewalk
-    DEFAULT_REPORT_TYPE_NAME: str = "Parking on Sidewalk"
+    # Report Types (hardcoded defaults, can expand later)
+    DEFAULT_REPORT_TYPE_ID: str = Field(default="963f1454-7c22-43be-aacb-3f34ae5d0dc7")  # Parking on sidewalk
+    DEFAULT_REPORT_TYPE_NAME: str = Field(default="Parking on Sidewalk")
     
     # Cron Job Auth (simple bearer token for Vercel Cron)
     CRON_SECRET: str
