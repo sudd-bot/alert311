@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "app/main.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "app/main.py"
+    }
+  ],
+  "env": {
+    "PYTHONPATH": "."
+  },
+  "crons": [
+    {
+      "path": "/cron/poll-reports",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/cron/send-alerts",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}
