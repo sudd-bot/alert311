@@ -12,8 +12,8 @@ from pathlib import Path
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
 
-# Add lib directory to path for reporter code
-lib_path = Path(__file__).parent.parent.parent / "lib"
+# Add reporter_lib directory to path for reporter code
+lib_path = Path(__file__).parent.parent.parent / "reporter_lib"
 if str(lib_path) not in sys.path:
     sys.path.insert(0, str(lib_path))
 
