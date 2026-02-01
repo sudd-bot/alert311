@@ -8,8 +8,14 @@ class Settings(BaseSettings):
     APP_NAME: str = "Alert311"
     DEBUG: bool = False
     
-    # Database
-    DATABASE_URL: str
+    # Database (Vercel uses POSTGRES_URL, allow fallback)
+    DATABASE_URL: Optional[str] = None
+    POSTGRES_URL: Optional[str] = None
+    
+    @property
+    def db_url(self) -> str:
+        """Get database URL from either DATABASE_URL or POSTGRES_URL."""
+        return self.DATABASE_URL or self.POSTGRES_URL or ""
     
     # 311 API (SF Spotmobile)
     SF311_BASE_URL: str = "https://mobile311.sfgov.org"

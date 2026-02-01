@@ -35,7 +35,11 @@ app.include_router(sf311_auth.router)
 @app.on_event("startup")
 async def startup_event():
     """Initialize database on startup."""
-    init_db()
+    try:
+        init_db()
+    except Exception as e:
+        # Log but don't fail - database might not be ready on cold start
+        print(f"Database init warning: {e}")
 
 
 @app.get("/")
