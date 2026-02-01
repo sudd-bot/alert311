@@ -7,8 +7,15 @@ from __future__ import annotations
 import time
 import json
 import httpx
+import sys
+from pathlib import Path
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
+
+# Add lib directory to path for reporter code
+lib_path = Path(__file__).parent.parent.parent / "lib"
+if str(lib_path) not in sys.path:
+    sys.path.insert(0, str(lib_path))
 
 from ..core.config import settings
 
@@ -43,26 +50,48 @@ class SF311Client:
     
     async def _refresh_tokens(self, refresh_token: str) -> SF311Tokens:
         """Refresh access token using refresh_token."""
-        url = f"{self.base_url}/oauth/token"
-        data = {
-            "grant_type": "refresh_token",
-            "client_id": self.client_id,
-            "refresh_token": refresh_token,
-            "redirect_uri": self.redirect_uri,
-            "scope": self.scope,
-        }
-        
-        async with httpx.AsyncClient() as client:
-            response = await client.post(url, data=data, timeout=30.0)
-            response.raise_for_status()
+        try:
+            import auth
             
-            token_data = response.json()
+            # Use the auth module's refresh function (it's synchronous)
+            tokens = auth.refresh_tokens(
+                base_url=self.base_url,
+                client_id=self.client_id,
+                redirect_uri=self.redirect_uri,
+                scope=self.scope,
+                refresh_token=refresh_token,
+                user_agent_app="Alert311/1.0",
+                timeout=30,
+            )
+            
             return SF311Tokens(
-                access_token=token_data["access_token"],
-                refresh_token=token_data.get("refresh_token", refresh_token),
-                expires_in=token_data.get("expires_in", 3600),
+                access_token=tokens.access_token,
+                refresh_token=tokens.refresh_token,
+                expires_in=tokens.expires_in,
                 obtained_at=int(time.time()),
             )
+        except Exception as e:
+            # Fallback to manual refresh if auth module fails
+            url = f"{self.base_url}/oauth/token"
+            data = {
+                "grant_type": "refresh_token",
+                "client_id": self.client_id,
+                "refresh_token": refresh_token,
+                "redirect_uri": self.redirect_uri,
+                "scope": self.scope,
+            }
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.post(url, data=data, timeout=30.0)
+                response.raise_for_status()
+                
+                token_data = response.json()
+                return SF311Tokens(
+                    access_token=token_data["access_token"],
+                    refresh_token=token_data.get("refresh_token", refresh_token),
+                    expires_in=token_data.get("expires_in", 3600),
+                    obtained_at=int(time.time()),
+                )
     
     async def _get_valid_token_for_user(self, user, db) -> str:
         """

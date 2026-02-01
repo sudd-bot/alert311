@@ -14,16 +14,11 @@ This will:
 import sys
 from pathlib import Path
 
-# Add reporter directory to path
-reporter_path = Path(__file__).parent.parent.parent / "reporter"
-sys.path.insert(0, str(reporter_path))
+# Add parent directory to path
+backend_path = Path(__file__).parent.parent
+sys.path.insert(0, str(backend_path))
 
-try:
-    import auth
-except ImportError:
-    print("❌ Error: Could not import reporter/auth.py")
-    print(f"Make sure reporter code exists at: {reporter_path}")
-    sys.exit(1)
+from lib import auth
 
 
 def main():

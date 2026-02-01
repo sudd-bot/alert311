@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     SF311_CLIENT_ID: str = "KLHhIUu56qWPHrYA16MUvxBXaJbPoAmKDbFjDFhe"
     SF311_REDIRECT_URI: str = "sf311://auth"
     SF311_SCOPE: str = "refresh_token read write openid"
-    SF311_GRAPHQL_URL: str = "https://mobile311.sfgov.org/api/graphql"
+    SF311_GRAPHQL_URL: str = "https://san-francisco2-production.spotmobile.net/graphql"
     
     # Twilio
     TWILIO_ACCOUNT_SID: str
