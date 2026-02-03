@@ -1,10 +1,11 @@
 """
 Pydantic schemas for API request/response validation.
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
+import re
 
 
 # ============ User Schemas ============
@@ -16,6 +17,19 @@ class AccountType(str, Enum):
 
 class UserRegister(BaseModel):
     phone: str = Field(..., description="Phone number in E.164 format (e.g., +16464171584)")
+    
+    @field_validator('phone')
+    @classmethod
+    def validate_phone(cls, v: str) -> str:
+        """Validate phone number is in E.164 format."""
+        # E.164 format: +[country code][number]
+        # Example: +16464171584
+        if not re.match(r'^\+[1-9]\d{1,14}$', v):
+            raise ValueError(
+                "Phone number must be in E.164 format (e.g., +16464171584). "
+                "Include country code with + prefix."
+            )
+        return v
 
 
 class UserVerify(BaseModel):
@@ -37,8 +51,17 @@ class UserResponse(BaseModel):
 # ============ Alert Schemas ============
 
 class AlertCreate(BaseModel):
-    address: str = Field(..., description="Street address in San Francisco")
+    address: str = Field(..., min_length=5, description="Street address in San Francisco")
     report_type_id: Optional[str] = Field(None, description="311 ticket type ID (defaults to parking on sidewalk)")
+    
+    @field_validator('address')
+    @classmethod
+    def validate_address(cls, v: str) -> str:
+        """Validate address is not empty or just whitespace."""
+        v = v.strip()
+        if not v:
+            raise ValueError("Address cannot be empty")
+        return v
 
 
 class AlertUpdate(BaseModel):
