@@ -217,6 +217,21 @@ All set in Vercel for both projects:
 
 ### 2026-02-03
 
+**Noon (12:00 PM) - Code Quality & Deployment Fixes**
+- ✅ **Fixed deployment issue** - Backend wasn't auto-deploying from git pushes
+  - Manually triggered production deployment with `vercel --prod`
+  - Verified health endpoint now returns `{"status":"healthy","database":"connected"}` ✨
+- ✅ **Replaced all print() statements with logging** - Better error tracking in production:
+  - `app/routes/cron.py` - 2 print statements → logger.error()
+  - `app/services/twilio_verify.py` - 2 print statements → logger.error()
+  - `app/services/sms_alert.py` - 1 print statement → logger.error()
+- ✅ **Code cleanup**:
+  - Removed misleading TODO comment in `alerts.py` (code already working as intended)
+  - Improved health check SQL syntax using `text()` for SQLAlchemy 2.0 compatibility
+  - Changed DB health check log level from error to warning (cold starts aren't errors)
+- 🚀 **Deployed** - Commits 156ec60, 508be27 pushed to GitHub
+- 📝 **Impact:** Better logging for debugging production issues, cleaner codebase
+
 **Late Morning (11:00 AM) - Documentation Update**
 - ✅ **Updated README.md** to reflect current deployment status:
   - Added live deployment URLs (frontend + backend)
