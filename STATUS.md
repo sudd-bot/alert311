@@ -1,6 +1,6 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-03 09:05 AM PST  
+**Last Updated:** 2026-02-03 10:00 AM PST  
 **Status:** ✅ **BACKEND WORKING** | Frontend Deployed | Security Hardened | Continuous Improvement Active
 
 ---
@@ -90,7 +90,11 @@ alert311/
 ## 🚀 Next Steps
 
 ### High Priority
-1. **Test full flow end-to-end** (when A2P campaign approved)
+1. **Performance optimizations** ✅ DONE
+   - Added database indexes for commonly queried fields
+   - Enhanced health endpoint with DB connectivity check
+   
+2. **Test full flow end-to-end** (when A2P campaign approved)
    - Register a phone number
    - Create an alert
    - Test SMS delivery
@@ -213,7 +217,16 @@ All set in Vercel for both projects:
 
 ### 2026-02-03
 
-**Morning (9:00 AM) - Security & Logging Improvements**
+**Mid-Morning (10:00 AM) - Performance & Monitoring Improvements**
+- ✅ **Enhanced health endpoint** - Now checks database connectivity (`/health` returns `{"status":"healthy","database":"connected"}`)
+- ✅ **Added database indexes** for frequently queried fields:
+  - `alert.active` - indexed for cron job queries (finding active alerts)
+  - `report.alert_id` - indexed for faster joins
+  - `report.sms_sent` - indexed for cron job queries (finding unsent reports)
+- ✅ **Clarified mock data** - Added comments to ReportsPanel explaining that real reports require SF 311 OAuth
+- 🚀 **Deployed** - Pushed to GitHub, Vercel auto-deploying
+
+**Earlier (9:00 AM) - Security & Logging Improvements**
 - ✅ **Restricted CORS** - Changed from `allow_origins=["*"]` to specific allowed origins:
   - `https://alert311-ui.vercel.app` (production frontend)
   - `https://www.alert311.com` (custom domain, when configured)
