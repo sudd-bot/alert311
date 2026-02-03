@@ -8,6 +8,8 @@ interface ReportsPanelProps {
 }
 
 // Mock recent alerts for demo
+// TODO: Replace with real data from /reports API endpoint when authenticated
+// Real reports require SF 311 OAuth + cron job polling (see backend/app/routes/cron.py)
 const MOCK_RECENT_ALERTS = [
   {
     id: 1,

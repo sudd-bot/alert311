@@ -20,7 +20,8 @@ class Alert(Base, TimestampMixin):
     report_type_id = Column(String, nullable=False)
     report_type_name = Column(String, nullable=False)  # Human-readable name
     
-    active = Column(Boolean, default=True, nullable=False)
+    # Indexed for cron job queries (finding active alerts)
+    active = Column(Boolean, default=True, nullable=False, index=True)
     
     # Relationships
     user = relationship("User", back_populates="alerts")

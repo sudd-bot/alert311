@@ -69,5 +69,24 @@ async def root():
 
 @app.get("/health")
 async def health():
-    """Health check for monitoring."""
-    return {"status": "healthy"}
+    """
+    Health check for monitoring.
+    Includes database connectivity check.
+    """
+    from .core.database import SessionLocal
+    
+    db_status = "unknown"
+    try:
+        # Try to connect to database
+        db = SessionLocal()
+        db.execute("SELECT 1")
+        db.close()
+        db_status = "connected"
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
+        db_status = "disconnected"
+    
+    return {
+        "status": "healthy",
+        "database": db_status
+    }
