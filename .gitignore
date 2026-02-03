@@ -1,2 +1,6 @@
 .vercel
 .env*.local
+.env.production
+.env.to-add
+backend/.env.to-add
+backend/.env.production
