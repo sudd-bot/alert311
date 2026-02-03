@@ -90,16 +90,20 @@ alert311/
 ## 🚀 Next Steps
 
 ### High Priority
-1. **Test full flow end-to-end**
+1. **Test full flow end-to-end** (when A2P campaign approved)
    - Register a phone number
    - Create an alert
-   - Test SMS delivery (when A2P campaign approved)
+   - Test SMS delivery
 
 2. **Set up custom domains**
    - `www.alert311.com` → frontend
    - `api.alert311.com` → backend (disable deployment protection)
 
-3. **Fix ESLint config warning** in frontend build
+3. **Consider JWT authentication**
+   - Currently using phone number as query parameter
+   - Should implement proper JWT tokens for security
+   - Would need to update all API endpoints
+   - **Note:** This is a bigger change - document and discuss with David first
 
 ### Medium Priority
 4. **Add more API endpoints**
