@@ -1,0 +1,169 @@
+'use client';
+
+import { useState } from 'react';
+
+interface ReportsPanelProps {
+  address: string;
+  onCreateNew: () => void;
+}
+
+// Mock recent alerts for demo
+const MOCK_RECENT_ALERTS = [
+  {
+    id: 1,
+    type: 'Sidewalk Parking',
+    status: 'Open',
+    date: '2 days ago',
+    description: 'Vehicle blocking sidewalk near entrance',
+    icon: '🚗',
+  },
+  {
+    id: 2,
+    type: 'Illegal Dumping',
+    status: 'Closed',
+    date: '1 week ago',
+    description: 'Mattress and furniture dumped on corner',
+    icon: '🗑️',
+  },
+  {
+    id: 3,
+    type: 'Graffiti',
+    status: 'Open',
+    date: '2 weeks ago',
+    description: 'Graffiti on building wall facing street',
+    icon: '🎨',
+  },
+];
+
+export default function ReportsPanel({ address, onCreateNew }: ReportsPanelProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <>
+      {/* Mobile: Bottom Sheet */}
+      <div className="fixed inset-x-0 bottom-0 z-50 lg:hidden safe-bottom animate-slideUp">
+        <div 
+          className={`glass-light rounded-t-3xl transition-all duration-300 ease-out ${
+            isExpanded ? 'max-h-[80vh]' : 'max-h-[280px]'
+          }`}
+        >
+          {/* Drag handle */}
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="w-full py-3 flex justify-center"
+            aria-label={isExpanded ? 'Collapse panel' : 'Expand panel'}
+          >
+            <div className="h-1 w-10 rounded-full bg-gray-300" />
+          </button>
+
+          <div className={`px-4 pb-4 overflow-y-auto scrollbar-hide ${isExpanded ? 'max-h-[calc(80vh-60px)]' : 'max-h-[220px]'}`}>
+            {/* Header */}
+            <div className="mb-4">
+              <h2 className="font-display text-lg font-bold text-gray-900">
+                Nearby Reports
+              </h2>
+              <p className="text-xs text-gray-500 truncate mt-0.5">
+                {address}
+              </p>
+            </div>
+
+            {/* Reports list */}
+            <div className="space-y-2.5">
+              {MOCK_RECENT_ALERTS.map((alert) => (
+                <div
+                  key={alert.id}
+                  className="flex items-start gap-3 rounded-xl bg-gray-100/80 p-3"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-lg shadow-sm">
+                    {alert.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm text-gray-900">{alert.type}</span>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                          alert.status === 'Open'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-emerald-100 text-emerald-700'
+                        }`}
+                      >
+                        {alert.status}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-xs text-gray-500 line-clamp-1">{alert.description}</p>
+                  </div>
+                  <span className="shrink-0 text-[10px] text-gray-400 font-medium">{alert.date}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA Button */}
+            <button
+              onClick={onCreateNew}
+              className="mt-4 w-full h-12 rounded-xl bg-primary font-display font-semibold text-primary-foreground shadow-lg shadow-primary/25 active:scale-[0.98] transition-transform"
+            >
+              Create New Alert
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop: Side Panel */}
+      <div className="fixed right-4 top-20 bottom-4 z-40 hidden lg:block w-96 animate-slideDown">
+        <div className="glass-light h-full rounded-2xl overflow-hidden flex flex-col ring-1 ring-black/5 shadow-xl">
+          {/* Header */}
+          <div className="p-5 border-b border-gray-100">
+            <h2 className="font-display text-xl font-bold text-gray-900">
+              Nearby Reports
+            </h2>
+            <p className="text-sm text-gray-500 truncate mt-1">
+              {address}
+            </p>
+          </div>
+
+          {/* Reports list */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
+            {MOCK_RECENT_ALERTS.map((alert) => (
+              <div
+                key={alert.id}
+                className="rounded-xl bg-gray-50 p-4 hover:bg-gray-100 transition-colors cursor-pointer"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-xl shadow-sm ring-1 ring-gray-100">
+                    {alert.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-semibold text-gray-900">{alert.type}</span>
+                      <span className="shrink-0 text-xs text-gray-400">{alert.date}</span>
+                    </div>
+                    <p className="mt-1 text-sm text-gray-600">{alert.description}</p>
+                    <span
+                      className={`mt-2 inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        alert.status === 'Open'
+                          ? 'bg-amber-100 text-amber-700'
+                          : 'bg-emerald-100 text-emerald-700'
+                      }`}
+                    >
+                      {alert.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA Button */}
+          <div className="p-4 border-t border-gray-100">
+            <button
+              onClick={onCreateNew}
+              className="w-full h-12 rounded-xl bg-primary font-display font-semibold text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98] transition-all"
+            >
+              Create New Alert
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

@@ -1,0 +1,10 @@
+<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Alert badge shape -->
+  <circle cx="30" cy="30" r="24" fill="#3B82F6"/>
+  <path d="M30 15 L30 32 M30 38 L30 40" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Text -->
+  <text x="60" y="38" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="700" fill="#1F2937">
+    Alert311
+  </text>
+</svg>

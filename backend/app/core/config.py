@@ -1,6 +1,8 @@
 from pydantic_settings import BaseSettings
 from pydantic import Field
 from typing import Optional
+import os
+from pathlib import Path
 
 
 class Settings(BaseSettings):
@@ -38,8 +40,11 @@ class Settings(BaseSettings):
     CRON_SECRET: str
     
     class Config:
-        env_file = ".env"
+        # .env file is optional - will use environment variables if not present
         case_sensitive = True
+        env_file = ".env"
+        env_file_encoding = "utf-8"
 
 
+# Initialize settings - will use environment variables in production
 settings = Settings()

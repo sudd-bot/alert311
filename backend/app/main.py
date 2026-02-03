@@ -56,3 +56,49 @@ async def root():
 async def health():
     """Health check for monitoring."""
     return {"status": "healthy"}
+
+
+@app.get("/debug/env")
+async def debug_env():
+    """Debug endpoint to check environment variables."""
+    import os
+    
+    # Look for relevant env vars
+    relevant_keys = [
+        'TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 
+        'TWILIO_VERIFY_SERVICE_SID', 'TWILIO_FROM_NUMBER',
+        'CRON_SECRET',
+        'DATABASE_URL', 'POSTGRES_URL',
+        'VERCEL', 'VERCEL_ENV'
+    ]
+    
+    found = {}
+    for key in relevant_keys:
+        value = os.environ.get(key)
+        if value:
+            # Mask the value but show it exists
+            if len(value) > 8:
+                found[key] = f"{value[:4]}...{value[-4:]}"
+            else:
+                found[key] = "***"
+        else:
+            found[key] = None
+    
+    # Check for any keys containing our keywords
+    all_matching = {}
+    for key in os.environ:
+        if any(keyword in key.upper() for keyword in ['TWILIO', 'CRON', 'DATABASE', 'POSTGRES']):
+            value = os.environ[key]
+            if len(value) > 8:
+                all_matching[key] = f"{value[:4]}...{value[-4:]}"
+            else:
+                all_matching[key] = "***"
+    
+    return {
+        'status': 'ok',
+        'message': 'Environment variable check',
+        'specific_vars': found,
+        'all_matching_vars': all_matching,
+        'total_env_vars': len(os.environ),
+        'settings_loaded': settings.APP_NAME
+    }
