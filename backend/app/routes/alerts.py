@@ -41,7 +41,7 @@ async def create_alert(
     
     # Use default report type if not specified
     report_type_id = alert_data.report_type_id or settings.DEFAULT_REPORT_TYPE_ID
-    report_type_name = settings.DEFAULT_REPORT_TYPE_NAME  # TODO: Look up from config
+    report_type_name = settings.DEFAULT_REPORT_TYPE_NAME
     
     # Create alert
     alert = Alert(

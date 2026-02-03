@@ -74,16 +74,17 @@ async def health():
     Includes database connectivity check.
     """
     from .core.database import SessionLocal
+    from sqlalchemy import text
     
     db_status = "unknown"
     try:
         # Try to connect to database
         db = SessionLocal()
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         db.close()
         db_status = "connected"
     except Exception as e:
-        logger.error(f"Database health check failed: {e}")
+        logger.warning(f"Database health check failed: {e}")
         db_status = "disconnected"
     
     return {
