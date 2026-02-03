@@ -4,8 +4,11 @@ SMS alert service using Twilio for sending notifications.
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
 from typing import Dict, Any
+import logging
 
 from ..core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class SMSAlertService:
@@ -34,7 +37,7 @@ class SMSAlertService:
             )
             return message.sid is not None
         except TwilioRestException as e:
-            print(f"SMS alert send error to {to_phone}: {e}")
+            logger.error(f"SMS alert send error to {to_phone}: {e}")
             return False
     
     def _format_alert_message(self, report_data: Dict[str, Any]) -> str:

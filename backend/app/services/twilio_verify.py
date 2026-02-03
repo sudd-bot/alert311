@@ -4,8 +4,11 @@ Twilio Verification API service for phone number verification.
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
 from typing import Optional
+import logging
 
 from ..core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class TwilioVerifyService:
@@ -25,7 +28,7 @@ class TwilioVerifyService:
             
             return verification.status == "pending"
         except TwilioRestException as e:
-            print(f"Twilio verification send error: {e}")
+            logger.error(f"Twilio verification send error: {e}")
             return False
     
     def check_verification(self, phone: str, code: str) -> bool:
@@ -40,7 +43,7 @@ class TwilioVerifyService:
             
             return verification_check.status == "approved"
         except TwilioRestException as e:
-            print(f"Twilio verification check error: {e}")
+            logger.error(f"Twilio verification check error: {e}")
             return False
 
 

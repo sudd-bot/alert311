@@ -5,6 +5,7 @@ These endpoints should be called by Vercel Cron on a schedule.
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from typing import List, Optional
+import logging
 
 from ..core.database import get_db
 from ..core.config import settings
@@ -12,6 +13,8 @@ from ..models import Alert, Report
 from ..schemas import SuccessResponse
 from ..services.sf311 import sf311_client
 from ..services.sms_alert import sms_alert_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/cron", tags=["cron"])
 
@@ -98,7 +101,7 @@ async def poll_311_reports(
             db.commit()
             
         except Exception as e:
-            print(f"Error polling reports for alert {alert.id}: {e}")
+            logger.error(f"Error polling reports for alert {alert.id}: {e}")
             continue
     
     return SuccessResponse(
@@ -152,7 +155,7 @@ async def send_pending_alerts(
                 sent_count += 1
             
         except Exception as e:
-            print(f"Error sending alert for report {report.id}: {e}")
+            logger.error(f"Error sending alert for report {report.id}: {e}")
             continue
     
     db.commit()
