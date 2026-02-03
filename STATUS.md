@@ -217,6 +217,21 @@ All set in Vercel for both projects:
 
 ### 2026-02-03
 
+**1:00 PM - Input Validation & Error Handling Improvements**
+- ✅ **Added phone number validation** - Now validates E.164 format (e.g., +16464171584) before sending to Twilio
+  - Clearer error messages for invalid phone numbers
+  - Prevents API calls with malformed phone numbers
+- ✅ **Added address validation** - Ensures addresses aren't empty or whitespace-only
+  - Strips whitespace from addresses
+  - Minimum 5 characters required
+- ✅ **Replaced final print() statement** - `geocoding.py` now uses proper logging
+- ✅ **Verified deployments working**:
+  - Backend health: `{"status":"healthy","database":"connected"}` ✅
+  - Frontend loading correctly with map and mock reports ✅
+  - API docs accessible at `/docs` ✅
+- 🚀 **Deployed** - Commits 4a4db4c, 25ee68c pushed to GitHub
+- 📝 **Impact:** Better input validation = fewer errors, clearer user feedback
+
 **Noon (12:00 PM) - Code Quality & Deployment Fixes**
 - ✅ **Fixed deployment issue** - Backend wasn't auto-deploying from git pushes
   - Manually triggered production deployment with `vercel --prod`
