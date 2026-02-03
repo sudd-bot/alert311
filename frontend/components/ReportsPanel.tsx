@@ -49,41 +49,41 @@ export default function ReportsPanel({ address, onCreateNew }: ReportsPanelProps
             isExpanded ? 'max-h-[80vh]' : 'max-h-[280px]'
           }`}
         >
-          {/* Drag handle */}
+          {/* Drag handle - Better touch target */}
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="w-full py-3 flex justify-center"
+            className="w-full py-4 flex justify-center"
             aria-label={isExpanded ? 'Collapse panel' : 'Expand panel'}
           >
-            <div className="h-1 w-10 rounded-full bg-gray-300" />
+            <div className="h-1.5 w-12 rounded-full bg-gray-300" />
           </button>
 
-          <div className={`px-4 pb-4 overflow-y-auto scrollbar-hide ${isExpanded ? 'max-h-[calc(80vh-60px)]' : 'max-h-[220px]'}`}>
-            {/* Header */}
-            <div className="mb-4">
-              <h2 className="font-display text-lg font-bold text-gray-900">
+          <div className={`px-5 pb-5 overflow-y-auto scrollbar-hide ${isExpanded ? 'max-h-[calc(80vh-60px)]' : 'max-h-[220px]'}`}>
+            {/* Header - Better spacing */}
+            <div className="mb-5">
+              <h2 className="font-display text-xl font-bold text-gray-900">
                 Nearby Reports
               </h2>
-              <p className="text-xs text-gray-500 truncate mt-0.5">
+              <p className="text-sm text-gray-500 truncate mt-1">
                 {address}
               </p>
             </div>
 
-            {/* Reports list */}
-            <div className="space-y-2.5">
+            {/* Reports list - Better card spacing */}
+            <div className="space-y-3">
               {MOCK_RECENT_ALERTS.map((alert) => (
                 <div
                   key={alert.id}
-                  className="flex items-start gap-3 rounded-xl bg-gray-100/80 p-3"
+                  className="flex items-start gap-3 rounded-xl bg-gray-100/80 p-4"
                 >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-lg shadow-sm">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white text-xl shadow-sm">
                     {alert.icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm text-gray-900">{alert.type}</span>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-sm text-gray-900">{alert.type}</span>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
                           alert.status === 'Open'
                             ? 'bg-amber-100 text-amber-700'
                             : 'bg-emerald-100 text-emerald-700'
@@ -92,17 +92,17 @@ export default function ReportsPanel({ address, onCreateNew }: ReportsPanelProps
                         {alert.status}
                       </span>
                     </div>
-                    <p className="mt-0.5 text-xs text-gray-500 line-clamp-1">{alert.description}</p>
+                    <p className="text-xs text-gray-600 line-clamp-1">{alert.description}</p>
                   </div>
-                  <span className="shrink-0 text-[10px] text-gray-400 font-medium">{alert.date}</span>
+                  <span className="shrink-0 text-[10px] text-gray-400 font-medium mt-0.5">{alert.date}</span>
                 </div>
               ))}
             </div>
 
-            {/* CTA Button */}
+            {/* CTA Button - More space above */}
             <button
               onClick={onCreateNew}
-              className="mt-4 w-full h-12 rounded-xl bg-primary font-display font-semibold text-primary-foreground shadow-lg shadow-primary/25 active:scale-[0.98] transition-transform"
+              className="mt-5 w-full h-14 rounded-xl bg-primary font-display font-semibold text-base text-primary-foreground shadow-lg shadow-primary/25 active:scale-[0.98] transition-transform"
             >
               Create New Alert
             </button>
@@ -110,38 +110,38 @@ export default function ReportsPanel({ address, onCreateNew }: ReportsPanelProps
         </div>
       </div>
 
-      {/* Desktop: Side Panel */}
-      <div className="fixed right-4 top-20 bottom-4 z-40 hidden lg:block w-96 animate-slideDown">
+      {/* Desktop: Side Panel - Better spacing throughout */}
+      <div className="fixed right-5 top-24 bottom-5 z-40 hidden lg:block w-96 animate-slideDown">
         <div className="glass-light h-full rounded-2xl overflow-hidden flex flex-col ring-1 ring-black/5 shadow-xl">
-          {/* Header */}
-          <div className="p-5 border-b border-gray-100">
+          {/* Header - More padding */}
+          <div className="p-6 border-b border-gray-100">
             <h2 className="font-display text-xl font-bold text-gray-900">
               Nearby Reports
             </h2>
-            <p className="text-sm text-gray-500 truncate mt-1">
+            <p className="text-sm text-gray-500 truncate mt-1.5">
               {address}
             </p>
           </div>
 
-          {/* Reports list */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
+          {/* Reports list - Better card spacing */}
+          <div className="flex-1 overflow-y-auto p-5 space-y-3 scrollbar-hide">
             {MOCK_RECENT_ALERTS.map((alert) => (
               <div
                 key={alert.id}
                 className="rounded-xl bg-gray-50 p-4 hover:bg-gray-100 transition-colors cursor-pointer"
               >
-                <div className="flex items-start gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-xl shadow-sm ring-1 ring-gray-100">
+                <div className="flex items-start gap-3.5">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-xl shadow-sm ring-1 ring-gray-100">
                     {alert.icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
                       <span className="font-semibold text-gray-900">{alert.type}</span>
                       <span className="shrink-0 text-xs text-gray-400">{alert.date}</span>
                     </div>
-                    <p className="mt-1 text-sm text-gray-600">{alert.description}</p>
+                    <p className="text-sm text-gray-600 mb-2">{alert.description}</p>
                     <span
-                      className={`mt-2 inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${
+                      className={`inline-block rounded-full px-2.5 py-1 text-xs font-bold ${
                         alert.status === 'Open'
                           ? 'bg-amber-100 text-amber-700'
                           : 'bg-emerald-100 text-emerald-700'
@@ -155,11 +155,11 @@ export default function ReportsPanel({ address, onCreateNew }: ReportsPanelProps
             ))}
           </div>
 
-          {/* CTA Button */}
-          <div className="p-4 border-t border-gray-100">
+          {/* CTA Button - Better padding */}
+          <div className="p-5 border-t border-gray-100">
             <button
               onClick={onCreateNew}
-              className="w-full h-12 rounded-xl bg-primary font-display font-semibold text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98] transition-all"
+              className="w-full h-14 rounded-xl bg-primary font-display font-semibold text-base text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98] transition-all"
             >
               Create New Alert
             </button>

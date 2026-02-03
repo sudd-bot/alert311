@@ -127,35 +127,35 @@ export default function Home() {
 
       {/* Initial State: Centered Search */}
       {!hasSearched && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 animate-fadeIn">
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
           
           <div className="relative w-full max-w-md animate-scaleIn">
-            {/* Main card */}
-            <div className="glass rounded-2xl p-6 sm:p-8 ring-1 ring-white/10">
-              {/* Logo */}
-              <div className="mb-8 text-center">
-                <div className="inline-flex items-center gap-2 mb-3">
-                  <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
-                    <svg className="h-6 w-6 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            {/* Main card - Improved padding: 8 on mobile, 10 on desktop */}
+            <div className="glass rounded-2xl p-8 sm:p-10 ring-1 ring-white/10">
+              {/* Logo - Better vertical spacing */}
+              <div className="mb-10 text-center">
+                <div className="inline-flex items-center gap-2 mb-5">
+                  <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center">
+                    <svg className="h-7 w-7 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
                   </div>
                 </div>
-                <h1 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">
+                <h1 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight mb-3">
                   Alert311
                 </h1>
-                <p className="mt-2 text-base sm:text-lg text-white/70 font-medium">
+                <p className="text-base sm:text-lg text-white/70 font-medium">
                   Get notified about 311 issues near you
                 </p>
               </div>
 
-              {/* Search */}
+              {/* Search - More space above */}
               <AddressSearch onLocationSelect={handleLocationSelect} />
 
-              {/* Footer hint */}
-              <p className="mt-6 text-center text-xs text-white/40">
+              {/* Footer hint - More space above */}
+              <p className="mt-8 text-center text-xs text-white/40">
                 San Francisco only • SMS alerts for nearby reports
               </p>
             </div>
@@ -166,22 +166,22 @@ export default function Home() {
       {/* After Search: Header + Reports Panel + Map Controls */}
       {hasSearched && selectedLocation && !showAlertPanel && (
         <>
-          {/* Header - Top */}
+          {/* Header - Top - Improved padding and spacing */}
           <div className="fixed top-0 left-0 right-0 z-40 safe-top animate-slideDown">
-            <div className="flex items-center gap-3 p-3 sm:p-4">
+            <div className="flex items-center gap-3 p-4 sm:p-5">
               <button
                 onClick={handleBack}
-                className="glass flex h-11 w-11 items-center justify-center rounded-xl ring-1 ring-white/10 text-white/80 hover:text-white hover:bg-white/10 transition-colors active:scale-95"
+                className="glass flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ring-1 ring-white/10 text-white/80 hover:text-white hover:bg-white/10 transition-colors active:scale-95"
                 aria-label="Back to search"
               >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
               
-              <div className="glass flex-1 rounded-xl px-4 py-2.5 ring-1 ring-white/10">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+              <div className="glass flex-1 rounded-xl px-4 py-3 ring-1 ring-white/10">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-2 w-2 rounded-full bg-primary animate-pulse shrink-0" />
                   <span className="text-sm font-medium text-white/90 truncate">
                     {selectedLocation.address.split(',')[0]}
                   </span>

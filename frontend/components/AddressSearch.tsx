@@ -150,8 +150,8 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
   };
 
   return (
-    <div ref={searchRef} className="relative w-full space-y-3">
-      {/* Search Input */}
+    <div ref={searchRef} className="relative w-full space-y-3.5">
+      {/* Search Input - Better height and padding */}
       <div className="relative">
         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">
           {isLoading ? (
@@ -172,7 +172,7 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setShowResults(true)}
           placeholder="Enter an address in SF..."
-          className="w-full h-14 rounded-xl bg-white/10 pl-12 pr-4 text-base text-white placeholder:text-white/40 ring-1 ring-white/20 focus:ring-2 focus:ring-primary focus:outline-none transition-shadow"
+          className="w-full h-14 rounded-xl bg-white/10 pl-12 pr-4 text-base text-white placeholder:text-white/40 ring-1 ring-white/20 focus:ring-2 focus:ring-primary focus:outline-none transition-all"
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"
@@ -180,11 +180,11 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
         />
       </div>
 
-      {/* Use My Location Button */}
+      {/* Use My Location Button - Better touch target */}
       <button
         onClick={handleUseLocation}
         disabled={isLocating}
-        className="w-full h-12 rounded-xl bg-white/5 ring-1 ring-white/10 text-white/70 font-medium flex items-center justify-center gap-2 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50"
+        className="w-full h-14 rounded-xl bg-white/5 ring-1 ring-white/10 text-white/70 font-medium flex items-center justify-center gap-2.5 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50"
       >
         {isLocating ? (
           <>
