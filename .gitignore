@@ -1,6 +1,38 @@
+# Vercel
 .vercel
+
+# Environment variables
 .env*.local
 .env.production
 .env.to-add
 backend/.env.to-add
 backend/.env.production
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.log
+
+# Node
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
