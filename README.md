@@ -2,37 +2,45 @@
 
 Get automated SMS alerts when specific 311 reports are filed in San Francisco.
 
+**🌐 Live App:** [alert311-ui.vercel.app](https://alert311-ui.vercel.app)  
+**🔌 API:** [backend-sigma-nine-42.vercel.app](https://backend-sigma-nine-42.vercel.app)
+
 ## Project Structure
 
 ```
 alert311/
-├── backend/        FastAPI backend + cron jobs
-└── frontend/       Next.js frontend (coming soon)
+├── backend/        FastAPI backend + cron jobs (deployed to Vercel)
+└── frontend/       Next.js frontend with Mapbox (deployed to Vercel)
 ```
 
 ## Features
 
 - 📱 **SMS Verification** - Secure phone number verification via Twilio
 - 🔔 **Custom Alerts** - Set alerts for specific addresses and report types
+- 🗺️ **Interactive Map** - Mapbox-powered interface with dark theme
 - 🤖 **Automated Polling** - Checks 311 API every 5 minutes
 - 💬 **SMS Notifications** - Instant text alerts for matching reports
-- 🗺️ **Address Matching** - Geocoding with exact address matching
-- 💰 **Free & Paid Tiers** - Flexible account types (payment integration coming)
+- 🎯 **Address Matching** - Geocoding with exact location targeting
+- 🔒 **Security** - CORS protection, environment variable safety
 
 ## Current Status
 
-✅ **Backend**: Complete and ready to deploy
-- FastAPI REST API
-- PostgreSQL database
+✅ **Backend**: Deployed and operational
+- FastAPI REST API running on Vercel serverless
+- PostgreSQL database (Neon)
 - Twilio integration (verification + SMS)
-- SF 311 API integration
-- Vercel Cron jobs for polling
+- SF 311 API integration ready (OAuth pending)
+- Vercel Cron jobs for automated polling
+- Database indexing for performance
+- Comprehensive logging and monitoring
 
-🚧 **Frontend**: Coming next
-- Next.js app with map interface
-- User registration/login
-- Alert management UI
-- Report history viewer
+✅ **Frontend**: Deployed and operational
+- Next.js app with Mapbox integration
+- Phone verification flow
+- Alert creation interface
+- Modern dark theme with floating panels
+- Responsive design (mobile + desktop)
+- Real-time geocoding and map interaction
 
 ## Quick Start (Backend)
 
@@ -63,12 +71,38 @@ uvicorn app.main:app --reload
 
 ## Deployment
 
-Deploy to Vercel (backend + frontend):
+**Current Deployments:**
+- **Frontend**: `alert311-ui.vercel.app` (auto-deploys from `main` branch `/frontend` folder)
+- **Backend**: `backend-sigma-nine-42.vercel.app` (auto-deploys from `main` branch `/backend` folder)
+- **Database**: Neon Postgres (connected via `DATABASE_URL`)
 
-1. Create Postgres database on Vercel
-2. Set environment variables
-3. Run `vercel` in project root
-4. Cron jobs auto-configured from `vercel.json`
+**Planned:**
+- Custom domain: `www.alert311.com` → frontend
+- API domain: `api.alert311.com` → backend
+
+### Environment Variables
+
+**Backend (Vercel Project: backend):**
+```
+DATABASE_URL=postgresql://...
+POSTGRES_URL=postgresql://...
+TWILIO_ACCOUNT_SID=...
+TWILIO_AUTH_TOKEN=...
+TWILIO_VERIFY_SERVICE_SID=...
+TWILIO_FROM_NUMBER=+1...
+CRON_SECRET=...
+```
+
+**Frontend (Vercel Project: alert311-ui):**
+```
+NEXT_PUBLIC_API_URL=https://backend-sigma-nine-42.vercel.app
+NEXT_PUBLIC_MAPBOX_TOKEN=pk....
+```
+
+### Cron Jobs
+Configured in `backend/vercel.json`:
+- Poll 311 API every 5 minutes
+- Send alert SMS every 5 minutes
 
 ## Tech Stack
 
@@ -88,12 +122,28 @@ Deploy to Vercel (backend + frontend):
 
 Once running, visit http://localhost:8000/docs for interactive API documentation.
 
-## Report Types (Initial)
+## Report Types
 
-Starting with one report type:
+Available alert types in the app:
 - **Parking on Sidewalk** (ID: `963f1454-7c22-43be-aacb-3f34ae5d0dc7`)
+- **Graffiti**
+- **Illegal Dumping**
+- **Homeless Encampment**
+- **Pothole**
+- **Streetlight Out**
 
-More types can be added by expanding the config.
+More types can be added by expanding `REPORT_TYPES` in the frontend `AlertPanel` component.
+
+## Continuous Improvement
+
+The project includes automated hourly health checks and incremental improvements via OpenClaw cron jobs. The system:
+- Checks deployment status
+- Reviews code for TODOs and potential improvements
+- Makes safe, incremental updates
+- Documents all changes in `STATUS.md`
+- Messages the maintainer about important changes
+
+See `STATUS.md` for detailed progress logs.
 
 ## Contributing
 
