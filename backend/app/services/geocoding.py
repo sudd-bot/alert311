@@ -2,9 +2,12 @@
 Geocoding service using Nominatim (OpenStreetMap).
 Free, no API key required.
 """
+import logging
 from typing import Optional, Tuple
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
+
+logger = logging.getLogger(__name__)
 
 
 class GeocodingService:
@@ -25,7 +28,7 @@ class GeocodingService:
                 return (location.latitude, location.longitude)
             return None
         except (GeocoderTimedOut, GeocoderServiceError) as e:
-            print(f"Geocoding error for '{address}': {e}")
+            logger.error(f"Geocoding error for '{address}': {e}")
             return None
 
 
