@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-03 08:50 AM PST  
-**Status:** ✅ **BACKEND WORKING** | Frontend Deployed | Continuous Improvement Active
+**Last Updated:** 2026-02-03 09:05 AM PST  
+**Status:** ✅ **BACKEND WORKING** | Frontend Deployed | Security Hardened | Continuous Improvement Active
 
 ---
 
@@ -131,12 +131,7 @@ alert311/
 ## ⚠️ Known Issues
 
 ### Minor Issues
-1. **ESLint config warning** during frontend build
-   - Error: Cannot find module 'eslint-config-next/core-web-vitals'
-   - Impact: None (build still succeeds)
-   - Fix: Update eslint.config.mjs to use `.js` extension
-
-2. **API domain requires auth**
+1. **API domain requires auth**
    - `api.alert311.com` redirects to Vercel auth
    - Impact: Public can't access API
    - Fix: Disable deployment protection for backend project
@@ -149,6 +144,9 @@ alert311/
 - ✅ Circular import error (fixed Feb 3)
 - ✅ Missing environment variables (fixed Feb 3)
 - ✅ Backend deployment failures (fixed Feb 3)
+- ✅ CORS security issue - restricted to allowed origins (fixed Feb 3 9:00 AM)
+- ✅ Debug endpoint exposing env vars (removed Feb 3 9:00 AM)
+- ✅ Secrets in git history (cleaned Feb 3 9:05 AM)
 
 ---
 
@@ -210,6 +208,18 @@ All set in Vercel for both projects:
 ## 📝 Daily Progress Log
 
 ### 2026-02-03
+
+**Morning (9:00 AM) - Security & Logging Improvements**
+- ✅ **Restricted CORS** - Changed from `allow_origins=["*"]` to specific allowed origins:
+  - `https://alert311-ui.vercel.app` (production frontend)
+  - `https://www.alert311.com` (custom domain, when configured)
+  - `http://localhost:3000` (local development)
+- ✅ **Removed debug endpoint** - Deleted `/debug/env` endpoint that was exposing environment variables (security risk)
+- ✅ **Improved logging** - Added proper Python logging with `logger.info()` and `logger.warning()` instead of `print()`
+- ✅ **Cleaned git history** - Removed `.env.production` and `backend/.env.to-add` from git history (contained Twilio secrets)
+- ✅ **Updated .gitignore** - Added patterns to prevent sensitive files from being committed
+
+**Earlier (8:50 AM)**
 - 🎉 **BACKEND WORKING!** Fixed circular import issue
 - ✅ Deployed backend as separate Vercel project
 - ✅ Copied all environment variables from alert311 → backend
