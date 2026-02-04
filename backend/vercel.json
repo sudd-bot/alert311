@@ -1,0 +1,19 @@
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api/index" }
+  ],
+  "crons": [
+    {
+      "path": "/cron/poll-reports",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/cron/send-alerts",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/cron/refresh-tokens",
+      "schedule": "0 */12 * * *"
+    }
+  ]
+}

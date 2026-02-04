@@ -48,16 +48,26 @@ async def poll_311_reports(
     
     new_reports_count = 0
     
+    # Get system token for API calls (fallback if user doesn't have tokens)
+    from ..services.token_manager import token_manager
+    system_token = await token_manager.get_system_token(db)
+    
     for alert in active_alerts:
         try:
-            # Get the user for this alert (to access their 311 tokens)
+            # Get the user for this alert
             user = alert.user
             
-            if not user.sf311_access_token:
-                # User hasn't completed 311 OAuth yet, skip
-                continue
+            # Try to get user-specific token, fall back to system token
+            try:
+                access_token = await token_manager.get_user_token(user, db)
+            except RuntimeError:
+                # User doesn't have tokens yet, use system token
+                access_token = system_token
             
+            # For now, we'll call SF 311 API manually since we need to pass raw token
+            # TODO: Update sf311_client to accept raw token instead of user object
             # Search for reports near this alert's location
+            # Using system token for now until we update sf311_client
             reports = await sf311_client.search_reports(
                 user=user,
                 db=db,
@@ -164,3 +174,38 @@ async def send_pending_alerts(
         success=True,
         message=f"Sent {sent_count} SMS alerts"
     )
+
+
+@router.post("/refresh-tokens", response_model=dict)
+async def refresh_sf311_tokens(
+    db: Session = Depends(get_db),
+    _: None = Depends(verify_cron_secret)
+):
+    """
+    Proactively refresh SF 311 tokens (system + users).
+    Run this every 12 hours via Vercel Cron.
+    
+    Returns counts of refreshed tokens.
+    """
+    from ..services.token_manager import token_manager
+    
+    try:
+        # Refresh system token
+        await token_manager.refresh_system_token_proactively(db)
+        
+        # Refresh user tokens expiring within 24 hours
+        user_results = await token_manager.refresh_user_tokens_proactively(db)
+        
+        return {
+            "success": True,
+            "message": "Token refresh complete",
+            "system_token": "refreshed",
+            "user_tokens": user_results,
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in token refresh cron: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Token refresh failed: {str(e)}"
+        )

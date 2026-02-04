@@ -46,14 +46,28 @@ app.include_router(sf311_auth.router)
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize database on startup."""
+    """Initialize database and system tokens on startup."""
     try:
         logger.info("Initializing database...")
         init_db()
         logger.info("Database initialized successfully")
+        
+        # Ensure system SF 311 token exists
+        from .core.database import SessionLocal
+        from .services.token_manager import token_manager
+        
+        db = SessionLocal()
+        try:
+            await token_manager.ensure_system_token_exists(db)
+            logger.info("System SF 311 token initialized")
+        except Exception as e:
+            logger.warning(f"SF 311 token initialization warning: {e}")
+        finally:
+            db.close()
+            
     except Exception as e:
         # Log but don't fail - database might not be ready on cold start
-        logger.warning(f"Database initialization warning: {e}")
+        logger.warning(f"Startup initialization warning: {e}")
         logger.info("Application will continue, database will retry on first request")
 
 

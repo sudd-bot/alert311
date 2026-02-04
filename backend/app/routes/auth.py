@@ -67,6 +67,16 @@ async def verify_phone(verify_data: UserVerify, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
     
+    # Auto-assign SF 311 token to user
+    try:
+        from ..services.token_manager import token_manager
+        await token_manager.assign_token_to_user(user, db)
+    except Exception as e:
+        # Log but don't fail - token can be assigned later
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Failed to assign SF 311 token to user {user.phone}: {e}")
+    
     return user
 
 
