@@ -1,216 +1,143 @@
-# Alert311 - Deployment Status
+# Alert311 Deployment Status
 
-**Last Updated:** 2026-02-03 08:51 AM PST  
-**Status:** ✅ **PRODUCTION READY**
-
----
-
-## ✅ Fully Deployed & Working
-
-### 🌐 Live URLs
-
-| Service | URL | Status |
-|---------|-----|--------|
-| **Frontend** | https://www.alert311.com | ✅ Live |
-| **Backend API** | https://backend-sigma-nine-42.vercel.app | ✅ Live |
-| **API Domain** | https://api.alert311.com | ⚠️ Auth Required |
-| **API Docs** | https://backend-sigma-nine-42.vercel.app/docs | ✅ Live |
-
-### 📊 What's Working
-
-✅ **Backend API**
-- FastAPI deployed on Vercel serverless
-- All endpoints functional (`/`, `/health`, `/docs`, `/auth`, `/alerts`)
-- Database connected (Neon Postgres)
-- Environment variables configured
-- Tables created (`users`, `alerts`, `reports`)
-
-✅ **Frontend**
-- Next.js deployed on Vercel
-- Dark theme with Mapbox integration
-- Connected to backend API
-- Custom domain working (www.alert311.com)
-
-✅ **Database**
-- Neon Postgres connected
-- Tables initialized:
-  - `users` - user accounts & phone verification
-  - `alerts` - user-created 311 alerts
-  - `reports` - cached 311 reports
-  - `accounttype` enum - account types
-
-✅ **Automation**
-- Hourly improvement cron job active
-- Checks status, fixes issues, makes improvements
-- Messages David about important changes
+**Last Updated:** 2026-02-03 21:59 PST  
+**Status:** ✅ SF 311 Token Management Deployed
 
 ---
 
-## ⚠️ Deployment Protection Issue
+## Latest Deployment
 
-**Problem:** `api.alert311.com` requires Vercel authentication
+### SF 311 OAuth Token Management System
 
-**Why:** Vercel's deployment protection is enabled by default on new projects
+**Commit:** `ac72f99` - Fix CRON_SECRET whitespace issue  
+**Deployed:** https://backend-sigma-nine-42.vercel.app  
+**Status:** ✅ Live in production
 
-**Impact:** Frontend can access API via direct URL, but custom domain requires auth
+### What Was Deployed
 
-**Solution Required:** Disable deployment protection via Vercel Dashboard
+1. **SystemConfig Model** - Database table for system-wide token storage
+2. **TokenManager Service** - Automatic token acquisition and refresh
+3. **Auto-assign Tokens** - Tokens assigned on phone verification
+4. **Token Refresh Cron** - Runs every 12 hours to refresh tokens
+5. **App Startup Init** - Ensures system token exists on cold start
 
-### How to Fix (Manual Steps for David)
+### Deployment Challenges
 
-1. Go to: https://vercel.com/sudds-projects-6d516a68/backend/settings/deployment-protection
-2. Under **Deployment Protection**, select **"Disabled"**
-3. Click **Save**
+**CRON_SECRET Whitespace Issue**
+- Problem: Environment variable had quotes, causing HTTP header validation error
+- Solution: Added pydantic field_validator to strip whitespace/quotes
+- Also: Re-added env var with `echo -n` to ensure no trailing newline
+- Result: ✅ Deployment successful
 
-**After that:** https://api.alert311.com will work without authentication
+### Current Status
 
-**Workaround (current):** Frontend uses direct URL `https://backend-sigma-nine-42.vercel.app`
+✅ **Backend Deployed** - https://backend-sigma-nine-42.vercel.app  
+✅ **Database Connected** - Health check passing  
+✅ **Cron Endpoint Working** - Authentication successful  
+⚠️ **SF 311 API** - Client ID needs verification (returns "client not found")  
+⏳ **System Token** - Will be initialized on first successful API call  
 
----
+### Test Results
 
-## 🚀 Ready to Test
-
-### Phone Verification Flow
 ```bash
-# 1. Register phone
-curl -X POST 'https://backend-sigma-nine-42.vercel.app/auth/register' \
-  -H 'Content-Type: application/json' \
-  -d '{"phone": "+16464171584"}'
+# Health check
+curl https://backend-sigma-nine-42.vercel.app/health
+{
+  "status": "healthy",
+  "database": "connected"
+}
 
-# 2. Verify SMS code (check your phone)
-curl -X POST 'https://backend-sigma-nine-42.vercel.app/auth/verify' \
-  -H 'Content-Type: application/json' \
-  -d '{"phone": "+16464171584", "code": "123456"}'
+# Token refresh cron (returns SF 311 API error, not our code error)
+curl -X POST https://backend-sigma-nine-42.vercel.app/cron/refresh-tokens \
+  -H 'Authorization: Bearer <CRON_SECRET>'
+{
+  "detail": "Token refresh failed: GET /auth failed: HTTP 400\nserver_error: client not found: KLHhIUu56q..."
+}
 ```
 
-### Create Alert
-```bash
-curl -X POST 'https://backend-sigma-nine-42.vercel.app/alerts?phone=+16464171584' \
-  -H 'Content-Type: application/json' \
-  -d '{"address": "555 Market St, San Francisco, CA"}'
-```
+The SF 311 API error indicates:
+- ✅ Our code is running correctly
+- ✅ Cron authentication working
+- ⚠️ SF 311 client ID may need to be updated/registered
 
 ---
 
-## 📋 Environment Variables (Configured)
+## Next Steps
 
-### Backend Project
-- ✅ `DATABASE_URL` - Neon Postgres
-- ✅ `POSTGRES_URL` - Neon Postgres (pooled)
-- ✅ `TWILIO_ACCOUNT_SID`
-- ✅ `TWILIO_AUTH_TOKEN`
-- ✅ `TWILIO_VERIFY_SERVICE_SID`
-- ✅ `TWILIO_FROM_NUMBER`
-- ✅ `CRON_SECRET`
+### 1. Verify SF 311 API Credentials
 
-### Frontend Project
-- ✅ `NEXT_PUBLIC_API_URL` - Points to backend
-- ✅ `NEXT_PUBLIC_MAPBOX_TOKEN`
+The client ID `KLHhIUu56qWPHrYA16MUvxBXaJbPoAmKDbFjDFhe` might be:
+- Outdated/deprecated
+- Needs to be registered with SF 311
+- Requires different credentials for production use
 
----
+**Action:** Check with David about SF 311 API registration.
 
-## 🔧 Technical Architecture
+### 2. Once SF 311 Credentials Work
 
-### Project Structure
-```
-alert311/
-├── backend/           # Separate Vercel project
-│   ├── api/index.py  # Mangum adapter
-│   ├── app/          # FastAPI app
-│   └── .vercel/      # Linked to "backend" project
-│
-├── frontend/         # Separate Vercel project
-│   ├── app/          # Next.js app
-│   └── .vercel/      # Linked to "alert311-ui" project
-│
-└── docs/             # Documentation
-```
+- [ ] System token will auto-initialize on startup
+- [ ] User tokens will auto-assign on phone verification
+- [ ] Token refresh cron will run every 12 hours
+- [ ] Update `/cron/poll-reports` to use TokenManager
+- [ ] Test end-to-end alert flow with real data
 
-### Deployment Strategy
-- **Backend:** Serverless functions (Python 3.12 + FastAPI + Mangum)
-- **Frontend:** Static site + server components (Next.js 15)
-- **Database:** Neon Postgres (serverless)
-- **SMS:** Twilio (A2P campaign pending)
+### 3. Frontend Integration
 
-### Recent Fixes
-1. Fixed circular import in `app/__init__.py`
-2. Deployed backend as separate Vercel project
-3. Migrated all environment variables
-4. Initialized database schema
-5. Set up custom domains
+- [ ] Update frontend to use real SF 311 data
+- [ ] Remove mock data
+- [ ] Test address search with system token
+- [ ] Test alert creation with user tokens
 
 ---
 
-## 🎯 Next Steps
+## Architecture Summary
 
-### Immediate
-1. **David:** Disable deployment protection on backend project (see instructions above)
-2. **Test:** Full user flow (register → verify → create alert)
-3. **Monitor:** Check for errors in Vercel logs
+### Two-Tier Token System
 
-### Short Term
-- Add GET `/alerts` endpoint (list user alerts)
-- Add PUT/DELETE `/alerts/{id}` endpoints (edit/delete)
-- Show existing alerts on frontend map
-- Add alert editing UI
+**System Token (for guests)**
+- Shared by all unauthenticated users
+- Used for address searches
+- Stored in `system_config` table
+- Refreshed every 12 hours via cron
+- Auto-initializes on app startup
 
-### Medium Term
-- Wait for Twilio A2P campaign approval (1-4 weeks)
-- Set up cron jobs for polling 311 API
-- Implement SMS alert sending
-- Add monitoring/logging
+**User Tokens (for verified users)**
+- One token per user
+- Auto-assigned on phone verification
+- Stored in `User.sf311_*` fields
+- Auto-refreshed before expiration (5-min buffer)
+- Proactively refreshed by cron (if expiring within 24h)
 
----
+### Cron Schedule
 
-## 🐛 Known Issues
+| Endpoint | Schedule | Purpose |
+|----------|----------|---------|
+| `/cron/poll-reports` | Every 5 min | Check for new 311 reports |
+| `/cron/send-alerts` | Every 5 min | Send SMS for new matches |
+| `/cron/refresh-tokens` | Every 12 hours | Refresh SF 311 tokens |
 
-### Minor
-1. **ESLint warning** during frontend build (doesn't affect functionality)
-2. **API domain auth** - Requires manual fix via dashboard (see above)
-3. **Twilio A2P pending** - SMS alerts won't work until approved
-
-### No Issues
-- ✅ Backend deployment working
-- ✅ Database connectivity working
-- ✅ Frontend deployment working
-- ✅ Custom domains configured
+All cron endpoints protected with `CRON_SECRET` bearer token.
 
 ---
 
-## 📈 Performance
+## Documentation
 
-**Backend Response Times:**
-- `/health`: ~200ms
-- `/docs`: ~300ms
-- API endpoints: ~300-500ms (cold start), ~100-200ms (warm)
-
-**Frontend Load Time:**
-- First load: ~1.5s
-- Subsequent: ~300ms (cached)
-
-**Database Queries:**
-- Connection pooling: ✅ Enabled
-- Query performance: TBD (needs testing with data)
+- **Technical Docs:** [`docs/SF311-TOKEN-MANAGEMENT.md`](docs/SF311-TOKEN-MANAGEMENT.md)
+- **Implementation Notes:** [`memory/2026-02-03-sf311-oauth-implementation.md`](~/.openclaw/workspace/memory/2026-02-03-sf311-oauth-implementation.md)
+- **Code:** `app/services/token_manager.py` (343 lines)
 
 ---
 
-## 🔐 Security
+## Lessons Learned
 
-✅ **Environment Variables:** Encrypted in Vercel
-✅ **HTTPS:** Enforced on all domains
-✅ **Database:** SSL required for connections
-✅ **Cron Jobs:** Bearer token authentication
-⚠️ **Deployment Protection:** Needs to be disabled for API
+1. **Environment Variable Quotes:** Vercel validates environment variables before Python runs, so quotes get included in the value. Use `echo -n` when setting env vars via CLI.
 
----
+2. **Pydantic Validators:** Field validators can sanitize config values at runtime, providing defense-in-depth against misconfigured env vars.
 
-## 📞 Support
+3. **Programmatic OAuth:** `reporter_lib/auth.py` allows acquiring SF 311 tokens without browser interaction - perfect for server-side automation.
 
-**Backend Issues:** Check logs at https://vercel.com/sudds-projects-6d516a68/backend/deployments  
-**Frontend Issues:** Check logs at https://vercel.com/sudds-projects-6d516a68/alert311-ui/deployments  
-**Database Issues:** Check Neon dashboard  
-**Twilio Issues:** Check Twilio console
+4. **Git Ignore:** `.env.production` is correctly in `.gitignore` - secrets stay out of git history.
 
 ---
 
-**Status:** Production ready. Backend and frontend deployed, database initialized, domains configured. Only remaining issue is deployment protection (requires manual dashboard change).
+**Next Session Focus:** Verify SF 311 API credentials, then integrate real data into report polling and frontend.
