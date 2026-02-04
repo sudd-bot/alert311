@@ -217,6 +217,16 @@ All set in Vercel for both projects:
 
 ### 2026-02-03
 
+**4:00 PM - Bug Fix: Report Type Name Mapping** 🐛
+- ✅ **Found and fixed critical bug** - Report type names weren't being mapped correctly
+  - **Problem:** When users created alerts for report types other than "Parking on Sidewalk", the backend was storing the wrong report_type_name
+  - **Root cause:** Backend was always using `settings.DEFAULT_REPORT_TYPE_NAME` instead of mapping the selected report_type_id
+  - **Impact:** Users would have gotten alerts for the wrong report type (e.g., selected "Graffiti" but got "Parking on Sidewalk" alerts)
+  - **Solution:** Added `REPORT_TYPE_NAMES` mapping dictionary in `alerts.py` to correctly map all 6 report type IDs to their human-readable names
+- ✅ **Verified fix** - Python syntax check passed, no errors
+- 🚀 **Deployed** - Commit a4d49d1 pushed to GitHub, Vercel auto-deploying
+- 📝 **Impact:** Alerts now work correctly for all 6 report types (Parking on Sidewalk, Graffiti, Illegal Dumping, Homeless Encampment, Pothole, Streetlight Out)
+
 **3:00 PM - Hourly Check (All Systems Operational)**
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
 - ✅ **Frontend loading correctly** - Map rendering, UI components working smoothly, no console errors
