@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from pydantic import Field
+from pydantic import Field, field_validator
 from typing import Optional
 import os
 from pathlib import Path
@@ -38,6 +38,12 @@ class Settings(BaseSettings):
     
     # Cron Job Auth (simple bearer token for Vercel Cron)
     CRON_SECRET: str
+    
+    @field_validator("CRON_SECRET")
+    @classmethod
+    def strip_cron_secret(cls, v: str) -> str:
+        """Strip whitespace and quotes from CRON_SECRET."""
+        return v.strip().strip('"').strip("'")
     
     class Config:
         # .env file is optional - will use environment variables if not present
