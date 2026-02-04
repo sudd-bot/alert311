@@ -13,6 +13,17 @@ from ..services.geocoding import geocoding_service
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 
+# Map report type IDs to human-readable names
+# These match the frontend's REPORT_TYPES array
+REPORT_TYPE_NAMES = {
+    "963f1454-7c22-43be-aacb-3f34ae5d0dc7": "Parking on Sidewalk",
+    "graffiti": "Graffiti",
+    "illegal-dumping": "Illegal Dumping",
+    "homeless-encampment": "Homeless Encampment",
+    "pothole": "Pothole",
+    "streetlight-out": "Streetlight Out",
+}
+
 
 @router.post("", response_model=AlertResponse)
 async def create_alert(
@@ -41,7 +52,9 @@ async def create_alert(
     
     # Use default report type if not specified
     report_type_id = alert_data.report_type_id or settings.DEFAULT_REPORT_TYPE_ID
-    report_type_name = settings.DEFAULT_REPORT_TYPE_NAME
+    
+    # Map report type ID to human-readable name
+    report_type_name = REPORT_TYPE_NAMES.get(report_type_id, settings.DEFAULT_REPORT_TYPE_NAME)
     
     # Create alert
     alert = Alert(
