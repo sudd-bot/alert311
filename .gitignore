@@ -1,13 +1,5 @@
-# Vercel
-.vercel
-
-# Environment variables
-.env*.local
-.env.production
-.env.to-add
-backend/.env.to-add
-backend/.env.production
-*.env
+# Ignore internal tracking files
+.last-check
 
 # Python
 __pycache__/
@@ -15,24 +7,35 @@ __pycache__/
 *$py.class
 *.so
 .Python
-*.egg-info/
-dist/
-build/
-*.log
+env/
+venv/
+.venv
+ENV/
 
 # Node
 node_modules/
 .next/
 out/
-*.tsbuildinfo
+.DS_Store
+
+# Environment
+.env
+.env.*
+.env.local
+.env.production
+.env.production.local
+backend/.env.to-add
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
-# OS
-.DS_Store
-Thumbs.db
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Vercel
+.vercel
