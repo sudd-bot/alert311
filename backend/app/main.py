@@ -7,7 +7,7 @@ import logging
 
 from .core.config import settings
 from .core.database import init_db
-from .routes import auth, alerts, reports, cron, sf311_auth
+from .routes import auth, alerts, reports, cron, sf311_auth, admin
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -43,6 +43,7 @@ app.include_router(alerts.router)
 app.include_router(reports.router)
 app.include_router(cron.router)
 app.include_router(sf311_auth.router)
+app.include_router(admin.router)
 
 
 @app.on_event("startup")
