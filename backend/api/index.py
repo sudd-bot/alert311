@@ -1,5 +1,6 @@
 """
 Vercel serverless entry point for FastAPI.
+Last updated: 2026-02-09 17:00 PST
 """
 import sys
 import os
