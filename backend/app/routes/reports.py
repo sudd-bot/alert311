@@ -41,6 +41,9 @@ async def get_nearby_reports(
     Fetch recent 311 reports near a location using SF 311 API.
     """
     try:
+        # Ensure system token exists (auto-initialize if missing)
+        await TokenManager.ensure_system_token_exists(db)
+        
         # Get system token
         token = await TokenManager.get_system_token(db)
         if not token:
