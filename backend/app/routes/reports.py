@@ -39,6 +39,7 @@ async def get_nearby_reports(
 ):
     """
     Fetch recent 311 reports near a location using SF 311 API.
+    Combines both recently opened and recently closed tickets.
     """
     try:
         # Ensure system token exists (auto-initialize if missing)
@@ -49,70 +50,75 @@ async def get_nearby_reports(
         if not token:
             raise HTTPException(status_code=500, detail="No SF 311 token available")
         
-        # Build GraphQL query
-        payload = {
-            "operationName": "ExploreQuery",
-            "variables": {
-                "scope": "recently_opened",
-                "order": {
-                    "by": "distance",
-                    "direction": "ascending",
-                    "latitude": lat,
-                    "longitude": lng,
-                },
-                "filters": {
-                    "ticket_type_id": ["963f1454-7c22-43be-aacb-3f34ae5d0dc7"],  # Parking violations
-                },
-                "limit": limit,
-            },
-            "query": """query ExploreQuery($scope: TicketsScopeEnum, $order: Json, $filters: Json, $limit: Int) {
-                tickets(first: $limit, scope: $scope, order: $order, filters: $filters) {
-                    nodes {
-                        id
-                        publicId
-                        status
-                        statusLabel
-                        submittedAt
-                        openedAt
-                        closedAt
-                        ticketType {
-                            name
-                        }
-                        location {
-                            address
-                            latitude
-                            longitude
-                        }
-                        photos {
-                            url
-                        }
-                    }
-                }
-            }"""
-        }
-        
-        # Make API request
+        # Prepare API request setup
         url = "https://san-francisco2-production.spotmobile.net/graphql"
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
-        
-        data = json.dumps(payload).encode('utf-8')
-        req = urllib.request.Request(url, data=data, method="POST")
-        for k, v in headers.items():
-            req.add_header(k, v)
-        
         context = ssl.create_default_context()
-        with urllib.request.urlopen(req, timeout=10, context=context) as response:
-            result = json.loads(response.read().decode('utf-8'))
         
-        # Parse response
+        all_tickets = []
+        
+        # Fetch both recently_opened and recently_closed tickets
+        for scope in ["recently_opened", "recently_closed"]:
+            payload = {
+                "operationName": "ExploreQuery",
+                "variables": {
+                    "scope": scope,
+                    "order": {
+                        "by": "distance",
+                        "direction": "ascending",
+                        "latitude": lat,
+                        "longitude": lng,
+                    },
+                    "filters": {
+                        "ticket_type_id": ["963f1454-7c22-43be-aacb-3f34ae5d0dc7"],  # Parking violations
+                    },
+                    "limit": limit,  # Fetch limit from each scope, we'll sort and limit later
+                },
+                "query": """query ExploreQuery($scope: TicketsScopeEnum, $order: Json, $filters: Json, $limit: Int) {
+                    tickets(first: $limit, scope: $scope, order: $order, filters: $filters) {
+                        nodes {
+                            id
+                            publicId
+                            status
+                            statusLabel
+                            submittedAt
+                            openedAt
+                            closedAt
+                            ticketType {
+                                name
+                            }
+                            location {
+                                address
+                                latitude
+                                longitude
+                            }
+                            photos {
+                                url
+                            }
+                        }
+                    }
+                }"""
+            }
+            
+            # Make API request
+            data = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(url, data=data, method="POST")
+            for k, v in headers.items():
+                req.add_header(k, v)
+            
+            with urllib.request.urlopen(req, timeout=10, context=context) as response:
+                result = json.loads(response.read().decode('utf-8'))
+                tickets = result.get("data", {}).get("tickets", {}).get("nodes", [])
+                all_tickets.extend(tickets)
+        
+        # Parse all tickets (from both scopes)
         reports = []
-        tickets = result.get("data", {}).get("tickets", {}).get("nodes", [])
         
-        for ticket in tickets:
+        for ticket in all_tickets:
             # Determine date to display
             date_str = ticket.get("openedAt") or ticket.get("submittedAt") or ""
             date_obj = None
@@ -125,6 +131,15 @@ async def get_nearby_reports(
             else:
                 date = "Unknown"
             
+            # Determine status - normalize to "open" or "closed"
+            ticket_status = ticket.get("status", "unknown").lower()
+            if ticket_status in ["closed", "resolved", "completed"]:
+                status = "closed"
+            elif ticket_status in ["open", "submitted", "acknowledged"]:
+                status = "open"
+            else:
+                status = ticket_status
+            
             # Get photo URL if available
             photos = ticket.get("photos", [])
             photo_url = photos[0]["url"] if photos else None
@@ -136,7 +151,7 @@ async def get_nearby_reports(
                     id=ticket["id"],
                     type=ticket.get("ticketType", {}).get("name", "Unknown"),
                     date=date,
-                    status=ticket.get("status", "unknown"),
+                    status=status,
                     address=location.get("address", "Unknown"),
                     latitude=location.get("latitude", lat),
                     longitude=location.get("longitude", lng),
@@ -145,9 +160,9 @@ async def get_nearby_reports(
                 "date_obj": date_obj  # Keep datetime object for sorting
             })
         
-        # Sort by date (newest first), then return just the reports
+        # Sort by date (newest first), then limit to requested amount
         reports.sort(key=lambda x: x["date_obj"] if x["date_obj"] else datetime.min, reverse=True)
-        return [r["report"] for r in reports]
+        return [r["report"] for r in reports[:limit]]
         
     except urllib.error.HTTPError as e:
         raise HTTPException(status_code=e.code, detail=f"SF 311 API error: {e.reason}")
