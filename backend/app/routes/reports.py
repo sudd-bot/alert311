@@ -132,8 +132,14 @@ async def get_nearby_reports(
                 date = "Unknown"
             
             # Determine status - normalize to "open" or "closed"
+            # Check both status field and closedAt field
             ticket_status = ticket.get("status", "unknown").lower()
-            if ticket_status in ["closed", "resolved", "completed"]:
+            closed_at = ticket.get("closedAt")
+            
+            # If there's a closedAt date, treat as closed regardless of status field
+            if closed_at:
+                status = "closed"
+            elif ticket_status in ["closed", "resolved", "completed"]:
                 status = "closed"
             elif ticket_status in ["open", "submitted", "acknowledged"]:
                 status = "open"
