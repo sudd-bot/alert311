@@ -298,6 +298,3 @@ class TokenManager:
             "failure_count": failure_count,
             "total_users": len(users),
         }
-
-
-token_manager = TokenManager()
