@@ -41,6 +41,7 @@ export default function NewHome() {
   const [isLoading, setIsLoading] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
   const [loadingReports, setLoadingReports] = useState(false);
+  const [searchError, setSearchError] = useState('');
 
   const fetchReports = async (lat: number, lng: number) => {
     setLoadingReports(true);
@@ -54,7 +55,21 @@ export default function NewHome() {
       }
       
       const data = await response.json();
-      setReports(data);
+      
+      // Sort reports by date in reverse chronological order (newest first)
+      const sortedReports = [...data].sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        
+        // If dates are invalid, keep original order
+        if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+          return 0;
+        }
+        
+        return dateB.getTime() - dateA.getTime();
+      });
+      
+      setReports(sortedReports);
     } catch (error) {
       console.error('Error fetching reports:', error);
       setReports([]);
@@ -67,6 +82,7 @@ export default function NewHome() {
     if (!query.trim()) return;
     
     setIsLoading(true);
+    setSearchError('');
     
     try {
       // Mapbox Geocoding API - restrict to addresses only
@@ -91,7 +107,7 @@ export default function NewHome() {
         });
         
         if (!addressFeature) {
-          alert('Please enter a complete street address (e.g., "123 Main St, San Francisco")');
+          setSearchError('Please enter a complete street address (e.g., "123 Main St, San Francisco")');
           setIsLoading(false);
           return;
         }
@@ -112,11 +128,11 @@ export default function NewHome() {
           essential: true
         });
       } else {
-        alert('Address not found. Please enter a complete street address in San Francisco.');
+        setSearchError('Address not found. Please enter a complete street address in San Francisco.');
       }
     } catch (error) {
       console.error('Geocoding error:', error);
-      alert('Error searching for address. Please try again.');
+      setSearchError('Error searching for address. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -279,15 +295,19 @@ export default function NewHome() {
         <div className="absolute inset-0 z-10 flex flex-col bg-gradient-to-b from-[#1a1410] via-[#1a1410]/50 to-[#1a1410]/90">
           {/* Logo & Title */}
           <div className="relative pt-24 pb-12 px-6 text-center animate-fade-in" style={{ paddingTop: 'max(6rem, env(safe-area-inset-top) + 4rem)' }}>
-            <div className="inline-flex items-center justify-center w-28 h-28 bg-[#ff6b35] rounded-sm rotate-45 animate-scale-in shadow-2xl" style={{ marginBottom: '5rem' }}>
-              <Bell className="w-14 h-14 text-[#1a1410] -rotate-45" strokeWidth={2.5} />
+            <div className="flex flex-col items-center">
+              <div className="inline-flex items-center justify-center w-28 h-28 bg-[#ff6b35] rounded-sm rotate-45 animate-scale-in shadow-2xl" style={{ marginBottom: '5rem' }}>
+                <Bell className="w-14 h-14 text-[#1a1410] -rotate-45" strokeWidth={2.5} />
+              </div>
+              <div className="inline-block bg-black/50 backdrop-blur-sm rounded-lg" style={{ padding: '2.5rem 4rem' }}>
+                <h1 className="text-5xl font-black text-[#fef6e4] mb-6 tracking-tight animate-fade-in stagger-1" style={{ fontFamily: 'DM Sans' }}>
+                  Alert<span className="text-gradient">311</span>
+                </h1>
+                <p className="text-lg text-[#fef6e4]/70 leading-relaxed text-center animate-fade-in stagger-2" style={{ fontFamily: 'Space Mono' }}>
+                  Real-time civic alerts<br />for San Francisco
+                </p>
+              </div>
             </div>
-            <h1 className="text-5xl font-black text-[#fef6e4] mb-6 tracking-tight animate-fade-in stagger-1" style={{ fontFamily: 'DM Sans' }}>
-              Alert<span className="text-gradient">311</span>
-            </h1>
-            <p className="text-lg text-[#fef6e4]/70 leading-relaxed text-center animate-fade-in stagger-2" style={{ fontFamily: 'Space Mono' }}>
-              Real-time civic alerts<br />for San Francisco
-            </p>
           </div>
 
           {/* Search Input - Centered */}
@@ -305,7 +325,10 @@ export default function NewHome() {
                     type="text"
                     placeholder="123 Main St, San Francisco..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      if (searchError) setSearchError('');
+                    }}
                     disabled={isLoading}
                     className="w-full h-20 bg-transparent text-[#fef6e4] placeholder-[#fef6e4]/40 text-lg font-medium focus:outline-none disabled:opacity-50"
                     style={{ fontFamily: 'DM Sans', paddingLeft: '6rem', paddingRight: '1.5rem' }}
@@ -317,6 +340,13 @@ export default function NewHome() {
                   />
                 </div>
               </div>
+              {searchError && (
+                <div className="mt-4 text-center animate-fade-in">
+                  <p className="text-sm text-red-400 font-medium" style={{ fontFamily: 'Space Mono' }}>
+                    {searchError}
+                  </p>
+                </div>
+              )}
               <div className="mt-8 flex items-center justify-center gap-2 text-sm text-[#fef6e4]/50" style={{ fontFamily: 'Space Mono' }}>
                 <div className="w-2 h-2 bg-[#ff6b35] rounded-full" />
                 <span>San Francisco only</span>
