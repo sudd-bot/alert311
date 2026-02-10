@@ -3,13 +3,148 @@ Report viewing routes.
 """
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
+from pydantic import BaseModel
+import json
+import urllib.request
+import urllib.error
+import ssl
+from datetime import datetime
 
 from ..core.database import get_db
 from ..models import User, Report, Alert
 from ..schemas import ReportResponse
+from ..services.token_manager import TokenManager
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
+
+class SF311Report(BaseModel):
+    id: str
+    type: str
+    date: str
+    status: str
+    address: str
+    latitude: float
+    longitude: float
+    photo_url: Optional[str] = None
+
+
+@router.get("/nearby", response_model=List[SF311Report])
+async def get_nearby_reports(
+    lat: float,
+    lng: float,
+    limit: int = 10,
+    db: Session = Depends(get_db)
+):
+    """
+    Fetch recent 311 reports near a location using SF 311 API.
+    """
+    try:
+        # Get system token
+        token_manager = TokenManager(db)
+        token = token_manager.get_system_token()
+        if not token:
+            raise HTTPException(status_code=500, detail="No SF 311 token available")
+        
+        # Build GraphQL query
+        payload = {
+            "operationName": "ExploreQuery",
+            "variables": {
+                "scope": "recently_opened",
+                "order": {
+                    "by": "distance",
+                    "direction": "ascending",
+                    "latitude": lat,
+                    "longitude": lng,
+                },
+                "filters": {
+                    "ticket_type_id": ["963f1454-7c22-43be-aacb-3f34ae5d0dc7"],  # Parking violations
+                },
+                "limit": limit,
+            },
+            "query": """query ExploreQuery($scope: TicketsScopeEnum, $order: Json, $filters: Json, $limit: Int) {
+                tickets(first: $limit, scope: $scope, order: $order, filters: $filters) {
+                    nodes {
+                        id
+                        publicId
+                        status
+                        statusLabel
+                        submittedAt
+                        openedAt
+                        closedAt
+                        ticketType {
+                            name
+                        }
+                        location {
+                            address
+                            latitude
+                            longitude
+                        }
+                        photos {
+                            url
+                        }
+                    }
+                }
+            }"""
+        }
+        
+        # Make API request
+        url = "https://san-francisco2-production.spotmobile.net/graphql"
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+        
+        data = json.dumps(payload).encode('utf-8')
+        req = urllib.request.Request(url, data=data, method="POST")
+        for k, v in headers.items():
+            req.add_header(k, v)
+        
+        context = ssl.create_default_context()
+        with urllib.request.urlopen(req, timeout=10, context=context) as response:
+            result = json.loads(response.read().decode('utf-8'))
+        
+        # Parse response
+        reports = []
+        tickets = result.get("data", {}).get("tickets", {}).get("nodes", [])
+        
+        for ticket in tickets:
+            # Determine date to display
+            date_str = ticket.get("openedAt") or ticket.get("submittedAt") or ""
+            if date_str:
+                try:
+                    date_obj = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                    date = date_obj.strftime("%b %d, %Y")
+                except:
+                    date = date_str
+            else:
+                date = "Unknown"
+            
+            # Get photo URL if available
+            photos = ticket.get("photos", [])
+            photo_url = photos[0]["url"] if photos else None
+            
+            location = ticket.get("location", {})
+            
+            reports.append(SF311Report(
+                id=ticket["id"],
+                type=ticket.get("ticketType", {}).get("name", "Unknown"),
+                date=date,
+                status=ticket.get("status", "unknown"),
+                address=location.get("address", "Unknown"),
+                latitude=location.get("latitude", lat),
+                longitude=location.get("longitude", lng),
+                photo_url=photo_url
+            ))
+        
+        return reports
+        
+    except urllib.error.HTTPError as e:
+        raise HTTPException(status_code=e.code, detail=f"SF 311 API error: {e.reason}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching reports: {str(e)}")
 
 
 @router.get("", response_model=List[ReportResponse])

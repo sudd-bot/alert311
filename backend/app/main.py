@@ -26,6 +26,7 @@ allowed_origins = [
     "https://alert311-ui.vercel.app",
     "https://www.alert311.com",  # For when custom domain is set up
     "http://localhost:3000",  # For local development
+    "http://sudd.local:3000",  # For local development (custom hostname)
 ]
 
 app.add_middleware(
