@@ -35,11 +35,13 @@ async def get_nearby_reports(
     lat: float,
     lng: float,
     limit: int = 10,
+    address: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     """
     Fetch recent 311 reports near a location using SF 311 API.
     Combines both recently opened and recently closed tickets.
+    If address is provided, filters to only show tickets at or very near that address.
     """
     try:
         # Ensure system token exists (auto-initialize if missing)
@@ -61,6 +63,9 @@ async def get_nearby_reports(
         
         all_tickets = []
         
+        # If filtering by address, fetch more tickets to ensure we get enough matches
+        fetch_limit = 50 if address else limit
+        
         # Fetch both recently_opened and recently_closed tickets
         for scope in ["recently_opened", "recently_closed"]:
             payload = {
@@ -76,7 +81,7 @@ async def get_nearby_reports(
                     "filters": {
                         "ticket_type_id": ["963f1454-7c22-43be-aacb-3f34ae5d0dc7"],  # Parking violations
                     },
-                    "limit": limit,  # Fetch limit from each scope, we'll sort and limit later
+                    "limit": fetch_limit,
                 },
                 "query": """query ExploreQuery($scope: TicketsScopeEnum, $order: Json, $filters: Json, $limit: Int) {
                     tickets(first: $limit, scope: $scope, order: $order, filters: $filters) {
@@ -165,6 +170,32 @@ async def get_nearby_reports(
                 ),
                 "date_obj": date_obj  # Keep datetime object for sorting
             })
+        
+        # Filter by address if provided
+        if address:
+            # Normalize the target address
+            target_addr = address.lower().replace(" street", " st").replace(" avenue", " ave").replace(".", "")
+            
+            # Filter to only include tickets that match the address
+            filtered_reports = []
+            for r in reports:
+                ticket_addr = r["report"].address.lower().replace(" street", " st").replace(" avenue", " ave").replace(".", "")
+                
+                # Extract street number and name for comparison
+                # E.g., "61 Chattanooga St" -> "61 chattanooga st"
+                if target_addr in ticket_addr or ticket_addr in target_addr:
+                    filtered_reports.append(r)
+                # Also try matching just the street number
+                elif address.split()[0].isdigit():
+                    target_number = address.split()[0]
+                    if ticket_addr.startswith(target_number + " "):
+                        # Same street number - check if street name matches
+                        target_street = " ".join(target_addr.split()[1:])
+                        ticket_street = " ".join(ticket_addr.split()[1:])
+                        if target_street in ticket_street or ticket_street in target_street:
+                            filtered_reports.append(r)
+            
+            reports = filtered_reports
         
         # Sort by date (newest first), then limit to requested amount
         reports.sort(key=lambda x: x["date_obj"] if x["date_obj"] else datetime.min, reverse=True)

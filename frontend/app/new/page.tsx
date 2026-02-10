@@ -43,11 +43,21 @@ export default function NewHome() {
   const [loadingReports, setLoadingReports] = useState(false);
   const [searchError, setSearchError] = useState('');
 
-  const fetchReports = async (lat: number, lng: number) => {
+  const fetchReports = async (lat: number, lng: number, address?: string) => {
     setLoadingReports(true);
     try {
+      const params = new URLSearchParams({
+        lat: lat.toString(),
+        lng: lng.toString(),
+        limit: '10'
+      });
+      
+      if (address) {
+        params.append('address', address);
+      }
+      
       const response = await fetch(
-        `${API_URL}/reports/nearby?lat=${lat}&lng=${lng}&limit=10`
+        `${API_URL}/reports/nearby?${params.toString()}`
       );
       
       if (!response.ok) {
@@ -101,11 +111,14 @@ export default function NewHome() {
         const [lng, lat] = addressFeature.center;
         const address = addressFeature.place_name;
         
+        // Extract just the street address (before the first comma)
+        const streetAddress = address.split(',')[0].trim();
+        
         setSelectedLocation({ address, lat, lng });
         setViewState('location-selected');
         
-        // Fetch reports for this location
-        fetchReports(lat, lng);
+        // Fetch reports for this location, filtering by the specific address
+        fetchReports(lat, lng, streetAddress);
         
         mapRef.current?.flyTo({
           center: [lng, lat],
