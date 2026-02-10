@@ -42,8 +42,7 @@ async def get_nearby_reports(
     """
     try:
         # Get system token
-        token_manager = TokenManager(db)
-        token = token_manager.get_system_token()
+        token = await TokenManager.get_system_token(db)
         if not token:
             raise HTTPException(status_code=500, detail="No SF 311 token available")
         
