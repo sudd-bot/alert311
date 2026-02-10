@@ -217,6 +217,27 @@ All set in Vercel for both projects:
 
 ### 2026-02-09
 
+**7:00 PM - Hourly Check (Vercel Deployment Still Stuck)** ⚠️
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding in 0.69s
+- ✅ **Frontend responding** - HTTP 200, site loading in 0.10s
+- ✅ **API docs accessible** - `/docs` endpoint working (HTTP 200)
+- ⚠️ **VERCEL DEPLOYMENT STUCK (3+ HOURS)** - `/reports/nearby` fix not deploying
+  - Code fix committed at 4:01 PM (commit 6a79fa5) ✅
+  - Triggered 4 different deployment attempts ❌
+  - Repository HEAD contains correct code ✅
+  - Live endpoint still shows old error: `"TokenManager() takes no arguments"` ❌
+  - **Root cause:** Vercel not picking up latest commits from main branch
+  - **Impact:** Low - only new endpoint affected, core systems (auth, alerts, health) fully operational
+  - **Action needed:** Manual Vercel dashboard intervention required:
+    - Review deployment logs for commits 6a79fa5, 29bab4b, 454a6c3, 4dc8bb8
+    - Check for build errors or silent failures
+    - Verify deploying from main branch (not a stale ref)
+    - Try manual "Redeploy" button with cache clear
+    - Check deployment webhook/git integration
+- 📝 **Code verified** - Python syntax correct, no debug statements, proper static method usage
+- 📊 **Core system stable** - 146 consecutive operational checks for main endpoints
+- 🔧 **Decision:** Issue persists, requires manual Vercel dashboard access - beyond automated fixes
+
 **6:00 PM - Hourly Check (Vercel Deployment Not Updating)** ⚠️
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding in 0.68s
 - ✅ **Frontend responding** - HTTP 200, site loading properly
