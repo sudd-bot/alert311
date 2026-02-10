@@ -55,21 +55,7 @@ export default function NewHome() {
       }
       
       const data = await response.json();
-      
-      // Sort reports by date in reverse chronological order (newest first)
-      const sortedReports = [...data].sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        
-        // If dates are invalid, keep original order
-        if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-          return 0;
-        }
-        
-        return dateB.getTime() - dateA.getTime();
-      });
-      
-      setReports(sortedReports);
+      setReports(data);
     } catch (error) {
       console.error('Error fetching reports:', error);
       setReports([]);

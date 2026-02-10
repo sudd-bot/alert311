@@ -115,6 +115,7 @@ async def get_nearby_reports(
         for ticket in tickets:
             # Determine date to display
             date_str = ticket.get("openedAt") or ticket.get("submittedAt") or ""
+            date_obj = None
             if date_str:
                 try:
                     date_obj = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
@@ -130,18 +131,23 @@ async def get_nearby_reports(
             
             location = ticket.get("location", {})
             
-            reports.append(SF311Report(
-                id=ticket["id"],
-                type=ticket.get("ticketType", {}).get("name", "Unknown"),
-                date=date,
-                status=ticket.get("status", "unknown"),
-                address=location.get("address", "Unknown"),
-                latitude=location.get("latitude", lat),
-                longitude=location.get("longitude", lng),
-                photo_url=photo_url
-            ))
+            reports.append({
+                "report": SF311Report(
+                    id=ticket["id"],
+                    type=ticket.get("ticketType", {}).get("name", "Unknown"),
+                    date=date,
+                    status=ticket.get("status", "unknown"),
+                    address=location.get("address", "Unknown"),
+                    latitude=location.get("latitude", lat),
+                    longitude=location.get("longitude", lng),
+                    photo_url=photo_url
+                ),
+                "date_obj": date_obj  # Keep datetime object for sorting
+            })
         
-        return reports
+        # Sort by date (newest first), then return just the reports
+        reports.sort(key=lambda x: x["date_obj"] if x["date_obj"] else datetime.min, reverse=True)
+        return [r["report"] for r in reports]
         
     except urllib.error.HTTPError as e:
         raise HTTPException(status_code=e.code, detail=f"SF 311 API error: {e.reason}")
