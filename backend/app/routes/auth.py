@@ -69,8 +69,8 @@ async def verify_phone(verify_data: UserVerify, db: Session = Depends(get_db)):
     
     # Auto-assign SF 311 token to user
     try:
-        from ..services.token_manager import token_manager
-        await token_manager.assign_token_to_user(user, db)
+        from ..services.token_manager import TokenManager
+        await TokenManager.assign_token_to_user(user, db)
     except Exception as e:
         # Log but don't fail - token can be assigned later
         import logging
