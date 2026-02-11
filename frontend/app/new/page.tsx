@@ -435,7 +435,7 @@ export default function NewHome() {
                       <Loader2 className="w-4 h-4 text-[#1a1410]/40 animate-spin" />
                     ) : (
                       <span className="text-sm font-bold text-[#1a1410]/40" style={{ fontFamily: 'Space Mono' }}>
-                        {reports.length}
+                        {Math.min(reports.length, 4)}
                       </span>
                     )}
                   </div>
@@ -455,7 +455,7 @@ export default function NewHome() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {reports.map((report, idx) => {
+                      {reports.slice(0, 4).map((report, idx) => {
                         return (
                           <div
                             key={report.id}
