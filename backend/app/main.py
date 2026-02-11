@@ -56,11 +56,11 @@ async def startup_event():
         
         # Ensure system SF 311 token exists
         from .core.database import SessionLocal
-        from .services.token_manager import token_manager
+        from .services.token_manager import TokenManager
         
         db = SessionLocal()
         try:
-            await token_manager.ensure_system_token_exists(db)
+            await TokenManager.ensure_system_token_exists(db)
             logger.info("System SF 311 token initialized")
         except Exception as e:
             logger.warning(f"SF 311 token initialization warning: {e}")

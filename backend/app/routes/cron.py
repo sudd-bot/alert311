@@ -49,8 +49,8 @@ async def poll_311_reports(
     new_reports_count = 0
     
     # Get system token for API calls (fallback if user doesn't have tokens)
-    from ..services.token_manager import token_manager
-    system_token = await token_manager.get_system_token(db)
+    from ..services.token_manager import TokenManager
+    system_token = await TokenManager.get_system_token(db)
     
     for alert in active_alerts:
         try:
@@ -59,7 +59,7 @@ async def poll_311_reports(
             
             # Try to get user-specific token, fall back to system token
             try:
-                access_token = await token_manager.get_user_token(user, db)
+                access_token = await TokenManager.get_user_token(user, db)
             except RuntimeError:
                 # User doesn't have tokens yet, use system token
                 access_token = system_token
@@ -187,14 +187,14 @@ async def refresh_sf311_tokens(
     
     Returns counts of refreshed tokens.
     """
-    from ..services.token_manager import token_manager
+    from ..services.token_manager import TokenManager
     
     try:
         # Refresh system token
-        await token_manager.refresh_system_token_proactively(db)
+        await TokenManager.refresh_system_token_proactively(db)
         
         # Refresh user tokens expiring within 24 hours
-        user_results = await token_manager.refresh_user_tokens_proactively(db)
+        user_results = await TokenManager.refresh_user_tokens_proactively(db)
         
         return {
             "success": True,
