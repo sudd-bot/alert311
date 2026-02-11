@@ -200,6 +200,8 @@ export default function Home() {
           {/* Reports Panel - Bottom Sheet on Mobile, Side Panel on Desktop */}
           <ReportsPanel 
             address={selectedLocation.address}
+            lat={selectedLocation.lat}
+            lng={selectedLocation.lng}
             onCreateNew={handleCreateNew}
           />
         </>

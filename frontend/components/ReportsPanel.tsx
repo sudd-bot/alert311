@@ -1,44 +1,88 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface ReportsPanelProps {
   address: string;
+  lat: number;
+  lng: number;
   onCreateNew: () => void;
 }
 
-// Mock recent alerts for demo
-// TODO: Replace with real data from /reports API endpoint when authenticated
-// Real reports require SF 311 OAuth + cron job polling (see backend/app/routes/cron.py)
-const MOCK_RECENT_ALERTS = [
-  {
-    id: 1,
-    type: 'Sidewalk Parking',
-    status: 'Open',
-    date: '2 days ago',
-    description: 'Vehicle blocking sidewalk near entrance',
-    icon: '🚗',
-  },
-  {
-    id: 2,
-    type: 'Illegal Dumping',
-    status: 'Closed',
-    date: '1 week ago',
-    description: 'Mattress and furniture dumped on corner',
-    icon: '🗑️',
-  },
-  {
-    id: 3,
-    type: 'Graffiti',
-    status: 'Open',
-    date: '2 weeks ago',
-    description: 'Graffiti on building wall facing street',
-    icon: '🎨',
-  },
-];
+interface Report {
+  id: string;
+  type: string;
+  date: string;
+  status: 'open' | 'closed';
+  address: string;
+  photo_url?: string | null;
+}
 
-export default function ReportsPanel({ address, onCreateNew }: ReportsPanelProps) {
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+// Map report types to icons
+const getReportIcon = (type: string): string => {
+  const lowerType = type.toLowerCase();
+  if (lowerType.includes('parking')) return '🚗';
+  if (lowerType.includes('graffiti')) return '🎨';
+  if (lowerType.includes('dump')) return '🗑️';
+  if (lowerType.includes('pothole')) return '🕳️';
+  if (lowerType.includes('streetlight')) return '💡';
+  return '📍';
+};
+
+// Format date for display
+const formatDate = (dateStr: string): string => {
+  try {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    return date.toLocaleDateString();
+  } catch {
+    return dateStr;
+  }
+};
+
+export default function ReportsPanel({ address, lat, lng, onCreateNew }: ReportsPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      setIsLoading(true);
+      try {
+        const streetAddress = address.split(',')[0].trim();
+        const params = new URLSearchParams({
+          lat: lat.toString(),
+          lng: lng.toString(),
+          limit: '4',
+          address: streetAddress
+        });
+        
+        const response = await fetch(`${API_URL}/reports/nearby?${params.toString()}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch reports');
+        }
+        
+        const data = await response.json();
+        setReports(data);
+      } catch (error) {
+        console.error('Error fetching reports:', error);
+        setReports([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReports();
+  }, [lat, lng, address]);
 
   return (
     <>
@@ -71,32 +115,42 @@ export default function ReportsPanel({ address, onCreateNew }: ReportsPanelProps
 
             {/* Reports list - Better card spacing */}
             <div className="space-y-3">
-              {MOCK_RECENT_ALERTS.map((alert) => (
-                <div
-                  key={alert.id}
-                  className="flex items-start gap-3 rounded-xl bg-gray-100/80 p-4"
-                >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white text-xl shadow-sm">
-                    {alert.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-sm text-gray-900">{alert.type}</span>
-                      <span
-                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-                          alert.status === 'Open'
-                            ? 'bg-amber-100 text-amber-700'
-                            : 'bg-emerald-100 text-emerald-700'
-                        }`}
-                      >
-                        {alert.status}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-600 line-clamp-1">{alert.description}</p>
-                  </div>
-                  <span className="shrink-0 text-[10px] text-gray-400 font-medium mt-0.5">{alert.date}</span>
+              {isLoading ? (
+                <div className="text-center py-8 text-gray-400 text-sm">
+                  Loading reports...
                 </div>
-              ))}
+              ) : reports.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 text-sm">
+                  No recent reports found nearby
+                </div>
+              ) : (
+                reports.map((report) => (
+                  <div
+                    key={report.id}
+                    className="flex items-start gap-3 rounded-xl bg-gray-100/80 p-4"
+                  >
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white text-xl shadow-sm">
+                      {getReportIcon(report.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-sm text-gray-900">{report.type}</span>
+                        <span
+                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                            report.status === 'open'
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-emerald-100 text-emerald-700'
+                          }`}
+                        >
+                          {report.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600 line-clamp-1">{report.address}</p>
+                    </div>
+                    <span className="shrink-0 text-[10px] text-gray-400 font-medium mt-0.5">{formatDate(report.date)}</span>
+                  </div>
+                ))
+              )}
             </div>
 
             {/* CTA Button - More space above */}
@@ -125,34 +179,44 @@ export default function ReportsPanel({ address, onCreateNew }: ReportsPanelProps
 
           {/* Reports list - Better card spacing */}
           <div className="flex-1 overflow-y-auto p-5 space-y-3 scrollbar-hide">
-            {MOCK_RECENT_ALERTS.map((alert) => (
-              <div
-                key={alert.id}
-                className="rounded-xl bg-gray-50 p-4 hover:bg-gray-100 transition-colors cursor-pointer"
-              >
-                <div className="flex items-start gap-3.5">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-xl shadow-sm ring-1 ring-gray-100">
-                    {alert.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <span className="font-semibold text-gray-900">{alert.type}</span>
-                      <span className="shrink-0 text-xs text-gray-400">{alert.date}</span>
+            {isLoading ? (
+              <div className="text-center py-12 text-gray-400">
+                Loading reports...
+              </div>
+            ) : reports.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                No recent reports found nearby
+              </div>
+            ) : (
+              reports.map((report) => (
+                <div
+                  key={report.id}
+                  className="rounded-xl bg-gray-50 p-4 hover:bg-gray-100 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-start gap-3.5">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-xl shadow-sm ring-1 ring-gray-100">
+                      {getReportIcon(report.type)}
                     </div>
-                    <p className="text-sm text-gray-600 mb-2">{alert.description}</p>
-                    <span
-                      className={`inline-block rounded-full px-2.5 py-1 text-xs font-bold ${
-                        alert.status === 'Open'
-                          ? 'bg-amber-100 text-amber-700'
-                          : 'bg-emerald-100 text-emerald-700'
-                      }`}
-                    >
-                      {alert.status}
-                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span className="font-semibold text-gray-900">{report.type}</span>
+                        <span className="shrink-0 text-xs text-gray-400">{formatDate(report.date)}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-2">{report.address}</p>
+                      <span
+                        className={`inline-block rounded-full px-2.5 py-1 text-xs font-bold ${
+                          report.status === 'open'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-emerald-100 text-emerald-700'
+                        }`}
+                      >
+                        {report.status}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
           {/* CTA Button - Better padding */}
