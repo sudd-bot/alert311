@@ -265,6 +265,11 @@ export default function NewHome() {
           mapboxAccessToken={MAPBOX_TOKEN}
           style={{ width: '100%', height: '100%' }}
           attributionControl={false}
+          scrollZoom={viewState !== 'location-selected'}
+          dragPan={viewState !== 'location-selected'}
+          dragRotate={viewState !== 'location-selected'}
+          doubleClickZoom={viewState !== 'location-selected'}
+          touchZoomRotate={viewState !== 'location-selected'}
         >
           {selectedLocation && (
             <Marker
@@ -379,22 +384,6 @@ export default function NewHome() {
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Recenter Button */}
-          <div className="absolute top-32 right-4 z-20 animate-scale-in" style={{ animationDelay: '0.2s' }}>
-            <button
-              onClick={() => {
-                mapRef.current?.flyTo({
-                  center: [selectedLocation.lng, selectedLocation.lat],
-                  zoom: 17,
-                  duration: 800,
-                });
-              }}
-              className="w-14 h-14 bg-[#fef6e4] border-4 border-[#1a1410] rounded-sm shadow-brutal-sm flex items-center justify-center active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
-            >
-              <Navigation className="w-6 h-6 text-[#1a1410]" strokeWidth={3} />
-            </button>
           </div>
 
           {/* Bottom Sheet */}
