@@ -222,12 +222,17 @@ All set in Vercel for both projects:
 - ✅ **Frontend responding** - HTTP 200, site loading properly
 - ✅ **Real data integration verified** - `/reports/nearby` returning SF 311 reports (tested with City Hall location) ✅
 - ✅ **API docs accessible** - `/docs` endpoint working (Swagger UI)
-- 🐛 **BUG FOUND AND FIXED** - Incorrect TokenManager import in auth.py
-  - **Issue:** `auth.py` was importing `token_manager` (lowercase) instead of `TokenManager` (static class)
-  - **Impact:** Could cause errors during phone verification when trying to auto-assign SF 311 tokens
-  - **Fix:** Changed `from ..services.token_manager import token_manager` to `import TokenManager`
-  - **Commit:** 446e524 - "fix: Correct TokenManager import in auth.py (static class method)"
-  - **Status:** Fixed and deployed ✅
+- 🐛 **MULTIPLE BUGS FOUND AND FIXED** - Incorrect TokenManager imports across codebase
+  - **Issue:** Multiple files (`auth.py`, `main.py`, `cron.py`) were importing `token_manager` (lowercase) instead of `TokenManager` (static class)
+  - **Impact:** Could cause errors during:
+    - Phone verification (auto-assigning SF 311 tokens)
+    - Application startup (system token initialization)
+    - Cron jobs (polling reports and refreshing tokens)
+  - **Files fixed:** `auth.py`, `main.py`, `cron.py` (4 total occurrences)
+  - **Commits:** 
+    - 446e524 - "fix: Correct TokenManager import in auth.py (static class method)"
+    - f75206d - "fix: Correct all TokenManager imports across codebase (static class)"
+  - **Status:** All fixed and deployed ✅
 - ✅ **Code quality verified** - Zero print() in backend, zero console.log() in app code (only in node_modules)
 - ✅ **Error handling verified** - Proper HTTPException/try-catch usage throughout
 - ✅ **Database indexes verified** - Proper indexing on alerts.active, users.phone, reports.alert_id, reports.report_id, reports.sms_sent
