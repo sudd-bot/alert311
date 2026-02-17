@@ -182,9 +182,11 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
             } else if (e.key === 'ArrowUp') {
               e.preventDefault();
               setHighlightedIndex((i) => Math.max(i - 1, -1));
-            } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+            } else if (e.key === 'Enter') {
               e.preventDefault();
-              handleSelect(results[highlightedIndex]);
+              // Select highlighted result, or auto-select the first result if none highlighted
+              const target = highlightedIndex >= 0 ? results[highlightedIndex] : results[0];
+              handleSelect(target);
             } else if (e.key === 'Escape') {
               setShowResults(false);
               setHighlightedIndex(-1);
