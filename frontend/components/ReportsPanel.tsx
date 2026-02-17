@@ -89,7 +89,7 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
         const params = new URLSearchParams({
           lat: lat.toString(),
           lng: lng.toString(),
-          limit: '4',
+          limit: '10',
           address: streetAddress
         });
         
@@ -159,7 +159,7 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                   No recent reports found nearby
                 </div>
               ) : (
-                reports.map((report) => (
+                (isExpanded ? reports : reports.slice(0, 4)).map((report) => (
                   <div
                     key={report.id}
                     className="flex items-start gap-3 rounded-xl bg-gray-100/80 p-4"
@@ -195,6 +195,16 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                 ))
               )}
             </div>
+
+            {/* "Tap to see more" hint when collapsed and there are hidden reports */}
+            {!isLoading && !isExpanded && reports.length > 4 && (
+              <button
+                onClick={() => setIsExpanded(true)}
+                className="mt-3 w-full text-center text-xs text-primary font-medium py-1"
+              >
+                ↑ Tap to see {reports.length - 4} more report{reports.length - 4 !== 1 ? 's' : ''}
+              </button>
+            )}
 
             {/* CTA Button - More space above */}
             <button
