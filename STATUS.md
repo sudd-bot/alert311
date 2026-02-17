@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-17 6:00 AM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 323 Consecutive Checks!
+**Last Updated:** 2026-02-17 8:00 AM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 325 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,39 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-17
+
+**8:00 AM - Hourly Check (All Systems Operational + 3 Improvements)** 🎉 ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding in ~0.76s
+- ✅ **Frontend responding** - HTTP 200 in ~0.11s
+- ✅ **Real data integration verified** - `/reports/nearby` returning live SF 311 reports ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **3 improvements shipped in a single commit (46e580e):**
+  - **Backend: expose `publicId` as `public_id` in SF311Report API response** — The SF311 GraphQL query already fetched `publicId` (the official case reference like "10026568") but it was silently discarded — now included in the response model and extracted from each ticket
+  - **Frontend: show "Case #XXXXXX" on all report cards** — Both mobile cards and desktop cards now display the official SF311 case number when available, so users have a reference they can use to follow up with 311 or track their report on sf311.org
+  - **Frontend: improved empty state** — Replaced the bare "No recent reports found nearby" text (mobile and desktop) with a proper empty state: ✅ emoji, bold "All clear!" heading, and descriptive subtext "No recent 311 reports near this address." — much more polished and informative
+  - **Frontend: removed misleading `cursor-pointer`** — Desktop report cards had `cursor-pointer` CSS but no click handler, which caused users' cursor to imply clickability where none existed; removed the misleading pointer (hover highlight effect preserved)
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Python syntax verified** - `py_compile` passes on `reports.py`
+- ✅ **Committed and pushed** — commit `46e580e`, 2 files changed (+29/-14 lines)
+- 🎉 **MILESTONE:** 325 consecutive operational checks! Three improvements shipped.
+
+**7:00 AM - Hourly Check (All Systems Operational + UX Improvement)** 🎉 ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.16s
+- ✅ **Real data integration verified** - `/reports/nearby` returning 10 live SF 311 reports (blocked driveway violations) ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **UX improvement in `AddressSearch.tsx` — keyboard navigation for search dropdown:**
+  - Previously, the address autocomplete dropdown had no keyboard support — users had to click results with a mouse
+  - Added `ArrowDown`/`ArrowUp` key handling to navigate through suggestions (index clamped to valid range)
+  - Added `Enter` key to select the highlighted suggestion (only when a result is focused; doesn't interfere with normal typing)
+  - Added `Escape` key to close the dropdown and reset highlight
+  - Mouse hover now syncs with the keyboard highlight index (hover sets highlighted, mouseleave clears it)
+  - Highlight resets when new search results arrive or dropdown is closed by clicking outside
+  - Standard web search/combobox accessibility pattern (WCAG-aligned)
+  - Purely additive — no existing logic changed, TypeScript zero errors
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `50f954b`, 1 file changed (+24/-1 lines)
+- 🎉 **MILESTONE:** 324 consecutive operational checks! Keyboard navigation shipped.
 
 **6:00 AM - Hourly Check (All Systems Operational + UX Improvement)** 🎉 ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding in ~0.15s
