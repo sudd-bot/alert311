@@ -165,9 +165,10 @@ async def get_nearby_reports(
             else:
                 status = ticket_status
             
-            # Get photo URL if available
+            # Get photo URL if available — strip Cloudinary #spot=... fragment (frontend-safe, cleaner URLs)
             photos = ticket.get("photos", [])
-            photo_url = photos[0]["url"] if photos else None
+            raw_photo_url = photos[0]["url"] if photos else None
+            photo_url = raw_photo_url.split("#")[0] if raw_photo_url else None
             
             location = ticket.get("location", {})
             
