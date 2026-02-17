@@ -9,7 +9,7 @@ import json
 import urllib.request
 import urllib.error
 import ssl
-from datetime import datetime
+from datetime import datetime, timezone
 
 from ..core.database import get_db
 from ..models import User, Report, Alert
@@ -131,7 +131,7 @@ async def get_nearby_reports(
                 try:
                     date_obj = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
                     date = date_obj.strftime("%b %d, %Y")
-                except:
+                except (ValueError, TypeError, AttributeError):
                     date = date_str
             else:
                 date = "Unknown"
@@ -198,7 +198,9 @@ async def get_nearby_reports(
             reports = filtered_reports
         
         # Sort by date (newest first), then limit to requested amount
-        reports.sort(key=lambda x: x["date_obj"] if x["date_obj"] else datetime.min, reverse=True)
+        # Use timezone-aware fallback so comparison with tz-aware date_obj doesn't raise TypeError
+        _EPOCH = datetime.min.replace(tzinfo=timezone.utc)
+        reports.sort(key=lambda x: x["date_obj"] if x["date_obj"] else _EPOCH, reverse=True)
         return [r["report"] for r in reports[:limit]]
         
     except urllib.error.HTTPError as e:
