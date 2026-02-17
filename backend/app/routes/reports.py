@@ -186,13 +186,38 @@ async def get_nearby_reports(
         
         # Filter by address if provided
         if address:
+            def _normalize_addr(a: str) -> str:
+                """Normalize street-type abbreviations for fuzzy matching."""
+                a = a.lower().strip()
+                # Remove punctuation
+                a = a.replace(".", "").replace(",", "")
+                # Full → abbreviated (order matters: longer strings first)
+                replacements = [
+                    (" boulevard", " blvd"),
+                    (" terrace", " ter"),
+                    (" avenue", " ave"),
+                    (" street", " st"),
+                    (" drive", " dr"),
+                    (" court", " ct"),
+                    (" place", " pl"),
+                    (" lane", " ln"),
+                    (" road", " rd"),
+                    (" circle", " cir"),
+                    (" highway", " hwy"),
+                    (" parkway", " pkwy"),
+                    (" square", " sq"),
+                ]
+                for full, abbr in replacements:
+                    a = a.replace(full, abbr)
+                return a
+
             # Normalize the target address
-            target_addr = address.lower().replace(" street", " st").replace(" avenue", " ave").replace(".", "")
+            target_addr = _normalize_addr(address)
             
             # Filter to only include tickets that match the address
             filtered_reports = []
             for r in reports:
-                ticket_addr = r["report"].address.lower().replace(" street", " st").replace(" avenue", " ave").replace(".", "")
+                ticket_addr = _normalize_addr(r["report"].address)
                 
                 # Extract street number and name for comparison
                 # E.g., "61 Chattanooga St" -> "61 chattanooga st"

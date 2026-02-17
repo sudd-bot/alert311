@@ -105,8 +105,13 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
           <div className={`px-5 pb-5 overflow-y-auto scrollbar-hide ${isExpanded ? 'max-h-[calc(80vh-60px)]' : 'max-h-[220px]'}`}>
             {/* Header - Better spacing */}
             <div className="mb-5">
-              <h2 className="font-display text-xl font-bold text-gray-900">
+              <h2 className="font-display text-xl font-bold text-gray-900 flex items-center gap-2">
                 Nearby Reports
+                {!isLoading && reports.length > 0 && (
+                  <span className="text-xs font-bold text-primary bg-primary/10 rounded-full px-2 py-0.5">
+                    {reports.length}
+                  </span>
+                )}
               </h2>
               <p className="text-sm text-gray-500 truncate mt-1">
                 {address}
@@ -177,8 +182,13 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
         <div className="glass-light h-full rounded-2xl overflow-hidden flex flex-col ring-1 ring-black/5 shadow-xl">
           {/* Header - More padding */}
           <div className="p-6 border-b border-gray-100">
-            <h2 className="font-display text-xl font-bold text-gray-900">
+            <h2 className="font-display text-xl font-bold text-gray-900 flex items-center gap-2">
               Nearby Reports
+              {!isLoading && reports.length > 0 && (
+                <span className="text-xs font-bold text-primary bg-primary/10 rounded-full px-2 py-0.5">
+                  {reports.length}
+                </span>
+              )}
             </h2>
             <p className="text-sm text-gray-500 truncate mt-1.5">
               {address}
