@@ -216,6 +216,25 @@ All set in Vercel for both projects:
 ## 📝 Daily Progress Log
 
 
+### 2026-02-17
+
+**12:00 AM - Hourly Check (All Systems Operational + 2 Improvements)** 🎉 ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding in 0.59s
+- ✅ **Frontend responding** - HTTP 200 in 0.11s
+- ✅ **Real data integration verified** - `/reports/nearby` returning 5 live SF 311 reports (blocked driveway violations: 1321 Jessie St, 32 11 Th St, 62 Polk St, 99 Oak St, 79 Franklin St) ✅
+- ✅ **API docs accessible** - HTTP 200 in 0.15s
+- ✅ **Git status clean** - Working tree clean before changes
+- 🐛 **Bug fixed in `reports.py` — duplicate tickets in results:**
+  - When merging `recently_opened` and `recently_closed` scope results, the same ticket could appear in both sets (if a ticket was recently opened AND recently closed). Added deduplication by ticket ID using a `seen_ids` set.
+  - Renamed `all_tickets` accumulator to `raw_tickets` during fetch, then deduplicated into `all_tickets` before parsing.
+- ✨ **UI improvement in `ReportsPanel.tsx` — photo thumbnails:**
+  - Report cards now show actual Cloudinary photo thumbnails (44×44px mobile, 48×48px desktop) instead of just emoji icons
+  - Cloudinary `#spot=...` hash fragment stripped from URLs before use (fragment caused no issues but is cleaner)
+  - Graceful fallback: on image load error, hides broken image (`display:none`), parent still shows rounded container
+  - Both mobile bottom sheet and desktop side panel updated
+- ✅ **Fix committed and pushed** — commit `0ff1808`, both Python syntax and TypeScript verified clean
+- 🎉 **MILESTONE:** 317 consecutive operational checks! Two improvements shipped.
+
 ### 2026-02-16
 
 **11:00 PM - Hourly Check (All Systems Operational + Bug Fix)** 🎉 ✅
