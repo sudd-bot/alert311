@@ -212,8 +212,14 @@ export default function AlertPanel({
                       type="tel"
                       value={userPhone}
                       onChange={(e) => setUserPhone(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && userPhone && !isLoading) {
+                          sendVerification();
+                        }
+                      }}
                       placeholder="+1 (555) 000-0000"
                       className="w-full h-12 rounded-xl bg-gray-100 px-4 text-base text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:outline-none transition-shadow"
+                      autoFocus
                     />
                   </div>
                   <p className="text-xs text-gray-500">
@@ -251,6 +257,11 @@ export default function AlertPanel({
                       inputMode="numeric"
                       value={verificationCode}
                       onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && verificationCode.length === 6 && !isLoading) {
+                          verifyCode();
+                        }
+                      }}
                       placeholder="000000"
                       className="w-full h-14 rounded-xl bg-gray-100 px-4 text-center text-2xl font-mono tracking-[0.5em] text-gray-900 placeholder:text-gray-300 focus:ring-2 focus:ring-primary focus:outline-none transition-shadow"
                       maxLength={6}
