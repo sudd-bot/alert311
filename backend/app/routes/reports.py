@@ -61,7 +61,7 @@ async def get_nearby_reports(
         }
         context = ssl.create_default_context()
         
-        all_tickets = []
+        raw_tickets = []
         
         # If filtering by address, fetch more tickets to ensure we get enough matches
         fetch_limit = 50 if address else limit
@@ -118,7 +118,16 @@ async def get_nearby_reports(
             with urllib.request.urlopen(req, timeout=10, context=context) as response:
                 result = json.loads(response.read().decode('utf-8'))
                 tickets = result.get("data", {}).get("tickets", {}).get("nodes", [])
-                all_tickets.extend(tickets)
+                raw_tickets.extend(tickets)
+        
+        # Deduplicate by ticket ID (same ticket can appear in both recently_opened and recently_closed)
+        seen_ids: set = set()
+        all_tickets = []
+        for ticket in raw_tickets:
+            ticket_id = ticket.get("id")
+            if ticket_id and ticket_id not in seen_ids:
+                seen_ids.add(ticket_id)
+                all_tickets.append(ticket)
         
         # Parse all tickets (from both scopes)
         reports = []

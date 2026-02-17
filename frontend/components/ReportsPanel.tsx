@@ -129,8 +129,19 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                     key={report.id}
                     className="flex items-start gap-3 rounded-xl bg-gray-100/80 p-4"
                   >
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white text-xl shadow-sm">
-                      {getReportIcon(report.type)}
+                    <div className="h-11 w-11 shrink-0 rounded-lg overflow-hidden bg-white shadow-sm">
+                      {report.photo_url ? (
+                        <img
+                          src={report.photo_url.split('#')[0]}
+                          alt={report.type}
+                          className="h-full w-full object-cover"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-xl">
+                          {getReportIcon(report.type)}
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -194,8 +205,19 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                   className="rounded-xl bg-gray-50 p-4 hover:bg-gray-100 transition-colors cursor-pointer"
                 >
                   <div className="flex items-start gap-3.5">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-xl shadow-sm ring-1 ring-gray-100">
-                      {getReportIcon(report.type)}
+                    <div className="h-12 w-12 shrink-0 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-gray-100">
+                      {report.photo_url ? (
+                        <img
+                          src={report.photo_url.split('#')[0]}
+                          alt={report.type}
+                          className="h-full w-full object-cover"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-xl">
+                          {getReportIcon(report.type)}
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2 mb-1.5">
