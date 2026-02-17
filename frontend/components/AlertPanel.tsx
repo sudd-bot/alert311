@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from './Toast';
 
 interface AlertPanelProps {
@@ -32,7 +32,25 @@ export default function AlertPanel({
   const [selectedReportType, setSelectedReportType] = useState(REPORT_TYPES[0].id);
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<'phone' | 'verify' | 'create' | 'success'>('phone');
+  const [resendCooldown, setResendCooldown] = useState(0);
   const { addToast } = useToast();
+
+  // Countdown timer for resend cooldown — starts when entering verify step
+  useEffect(() => {
+    if (step === 'verify') {
+      setResendCooldown(30);
+      const interval = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [step]);
 
   const sendVerification = async () => {
     setIsLoading(true);
@@ -121,6 +139,14 @@ export default function AlertPanel({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const resendCode = async () => {
+    // Re-use sendVerification; it will stay on 'verify' step (setStep('verify') is a no-op here)
+    // and shows "Verification code sent!" toast on success.
+    // Reset cooldown after the call regardless of outcome.
+    await sendVerification();
+    setResendCooldown(30);
   };
 
   return (
@@ -288,12 +314,21 @@ export default function AlertPanel({
                       'Verify'
                     )}
                   </button>
-                  <button
-                    onClick={() => setStep('phone')}
-                    className="w-full text-sm text-gray-500 hover:text-gray-700"
-                  >
-                    Use a different number
-                  </button>
+                  <div className="flex items-center justify-between gap-2">
+                    <button
+                      onClick={() => setStep('phone')}
+                      className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                    >
+                      Use a different number
+                    </button>
+                    <button
+                      onClick={resendCode}
+                      disabled={resendCooldown > 0 || isLoading}
+                      className="text-sm font-medium text-primary hover:text-primary/80 disabled:text-gray-400 disabled:cursor-default transition-colors"
+                    >
+                      {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend code'}
+                    </button>
+                  </div>
                 </div>
               )}
 
