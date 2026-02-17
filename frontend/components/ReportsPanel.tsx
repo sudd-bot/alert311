@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface ReportsPanelProps {
   address: string;
@@ -14,6 +14,7 @@ interface Report {
   public_id?: string | null;
   type: string;
   date: string;
+  raw_date?: string | null;
   status: 'open' | 'closed';
   address: string;
   photo_url?: string | null;
@@ -60,10 +61,14 @@ const getReportIcon = (type: string): string => {
   return '📍';
 };
 
-// Format date for display
-const formatDate = (dateStr: string): string => {
+// Format date for display — prefers ISO raw_date for accurate relative time
+const formatDate = (dateStr: string, rawDate?: string | null): string => {
   try {
-    const date = new Date(dateStr);
+    // Use raw ISO date for reliable parsing when available
+    const parseable = rawDate || dateStr;
+    const date = new Date(parseable);
+    if (isNaN(date.getTime())) return dateStr;
+
     const now = new Date();
     const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
     
@@ -81,37 +86,40 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
   const [isExpanded, setIsExpanded] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+
+  const fetchReports = useCallback(async () => {
+    setIsLoading(true);
+    setHasError(false);
+    try {
+      const streetAddress = address.split(',')[0].trim();
+      const params = new URLSearchParams({
+        lat: lat.toString(),
+        lng: lng.toString(),
+        limit: '10',
+        address: streetAddress
+      });
+      
+      const response = await fetch(`${API_URL}/reports/nearby?${params.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch reports');
+      }
+      
+      const data = await response.json();
+      setReports(data);
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+      setHasError(true);
+      setReports([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [lat, lng, address]);
 
   useEffect(() => {
-    const fetchReports = async () => {
-      setIsLoading(true);
-      try {
-        const streetAddress = address.split(',')[0].trim();
-        const params = new URLSearchParams({
-          lat: lat.toString(),
-          lng: lng.toString(),
-          limit: '10',
-          address: streetAddress
-        });
-        
-        const response = await fetch(`${API_URL}/reports/nearby?${params.toString()}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch reports');
-        }
-        
-        const data = await response.json();
-        setReports(data);
-      } catch (error) {
-        console.error('Error fetching reports:', error);
-        setReports([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchReports();
-  }, [lat, lng, address]);
+  }, [fetchReports]);
 
   return (
     <>
@@ -155,6 +163,18 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                   <ReportSkeleton />
                   <ReportSkeleton />
                 </>
+              ) : hasError ? (
+                <div className="text-center py-8">
+                  <div className="text-3xl mb-2" aria-hidden="true">⚠️</div>
+                  <p className="font-semibold text-gray-700 text-sm">Couldn't load reports</p>
+                  <p className="text-gray-500 text-xs mt-1">Check your connection and try again.</p>
+                  <button
+                    onClick={fetchReports}
+                    className="mt-3 text-xs text-primary font-medium hover:underline"
+                  >
+                    Retry
+                  </button>
+                </div>
               ) : reports.length === 0 ? (
                 <div className="text-center py-8">
                   <div className="text-3xl mb-2" aria-hidden="true">✅</div>
@@ -196,7 +216,7 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                         <p className="text-[10px] text-gray-400 mt-0.5">Case #{report.public_id}</p>
                       )}
                     </div>
-                    <span className="shrink-0 text-[10px] text-gray-400 font-medium mt-0.5">{formatDate(report.date)}</span>
+                    <span className="shrink-0 text-[10px] text-gray-400 font-medium mt-0.5">{formatDate(report.date, report.raw_date)}</span>
                   </div>
                 ))
               )}
@@ -250,6 +270,18 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                 <ReportSkeletonDesktop />
                 <ReportSkeletonDesktop />
               </>
+            ) : hasError ? (
+              <div className="text-center py-12">
+                <div className="text-4xl mb-3" aria-hidden="true">⚠️</div>
+                <p className="font-semibold text-gray-700">Couldn't load reports</p>
+                <p className="text-sm text-gray-500 mt-1">Check your connection and try again.</p>
+                <button
+                  onClick={fetchReports}
+                  className="mt-4 text-sm text-primary font-medium hover:underline"
+                >
+                  Retry
+                </button>
+              </div>
             ) : reports.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-4xl mb-3" aria-hidden="true">✅</div>
@@ -277,7 +309,7 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2 mb-1.5">
                         <span className="font-semibold text-gray-900">{report.type}</span>
-                        <span className="shrink-0 text-xs text-gray-400">{formatDate(report.date)}</span>
+                        <span className="shrink-0 text-xs text-gray-400">{formatDate(report.date, report.raw_date)}</span>
                       </div>
                       <p className="text-sm text-gray-600 mb-2">{report.address}</p>
                       <div className="flex items-center gap-2">

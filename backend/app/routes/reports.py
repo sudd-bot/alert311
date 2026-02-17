@@ -25,6 +25,7 @@ class SF311Report(BaseModel):
     public_id: Optional[str] = None
     type: str
     date: str
+    raw_date: Optional[str] = None  # ISO 8601 string for accurate client-side relative-time formatting
     status: str
     address: str
     latitude: float
@@ -178,6 +179,7 @@ async def get_nearby_reports(
                     public_id=ticket.get("publicId"),
                     type=ticket.get("ticketType", {}).get("name", "Unknown"),
                     date=date,
+                    raw_date=date_str or None,  # ISO 8601 string for client-side relative-time formatting
                     status=status,
                     address=location.get("address", "Unknown"),
                     latitude=location.get("latitude", lat),
