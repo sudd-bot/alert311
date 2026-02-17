@@ -11,6 +11,25 @@ interface AlertPanelProps {
   onAlertCreated: (alert: any) => void;
 }
 
+/**
+ * Normalize a US phone number to E.164 format (+1XXXXXXXXXX).
+ * Handles inputs like "646-417-1584", "(646) 417-1584", "6464171584", "16464171584", "+16464171584".
+ * Non-US numbers with a + prefix are passed through with spaces/dashes stripped.
+ * If normalization isn't possible, returns the original string (backend validates).
+ */
+const normalizePhone = (phone: string): string => {
+  const stripped = phone.trim();
+  const digits = stripped.replace(/\D/g, '');
+  // Already has a + country code prefix — return as +DIGITS
+  if (stripped.startsWith('+') && digits.length >= 7) return `+${digits}`;
+  // 10-digit US number (no country code)
+  if (digits.length === 10) return `+1${digits}`;
+  // 11-digit number starting with 1 (US with country code, no +)
+  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
+  // Can't normalize — return as-is and let the backend validate
+  return stripped;
+};
+
 const REPORT_TYPES = [
   { id: '963f1454-7c22-43be-aacb-3f34ae5d0dc7', name: 'Parking on Sidewalk', icon: '🚗' },
   { id: 'graffiti', name: 'Graffiti', icon: '🎨' },
@@ -53,12 +72,15 @@ export default function AlertPanel({
   }, [step]);
 
   const sendVerification = async () => {
+    // Normalize phone to E.164 before sending — handles "646-417-1584", "(646) 417-1584", etc.
+    const phone = normalizePhone(userPhone);
+    if (phone !== userPhone) setUserPhone(phone); // Update display to normalized form
     setIsLoading(true);
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: userPhone }),
+        body: JSON.stringify({ phone }),
       });
 
       if (response.ok) {
@@ -243,13 +265,13 @@ export default function AlertPanel({
                           sendVerification();
                         }
                       }}
-                      placeholder="+1 (555) 000-0000"
+                      placeholder="(555) 000-0000 or +1 555 000 0000"
                       className="w-full h-12 rounded-xl bg-gray-100 px-4 text-base text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:outline-none transition-shadow"
                       autoFocus
                     />
                   </div>
                   <p className="text-xs text-gray-500">
-                    We'll send you a verification code via SMS
+                    US numbers accepted in any format — we'll send a verification code via SMS
                   </p>
                   <button
                     onClick={sendVerification}
