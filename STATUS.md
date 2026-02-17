@@ -218,6 +218,47 @@ All set in Vercel for both projects:
 
 ### 2026-02-17
 
+**9:00 AM - Hourly Check (🚨 CRITICAL FIX: Vercel Not Auto-Deploying — Full Redeployment)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding in ~0.2s
+- ✅ **Frontend responding** - HTTP 200 in ~0.16s
+- ✅ **Real data integration verified** - `/reports/nearby` returning 10 live SF 311 reports
+- ✅ **Git status clean** - Up to date with origin/main
+- 🚨 **CRITICAL DISCOVERY: Vercel NOT auto-deploying from GitHub**
+  - Both `backend` and `alert311-ui` Vercel projects showed last deployment **7 days ago**
+  - All improvements from the past week (Feb 10–17) were committed to GitHub but NEVER deployed to production
+  - Root cause: projects deployed via Vercel CLI (not GitHub integration) — no auto-deploy webhook configured
+  - **Impact:** All of these improvements were invisible to real users for an entire week:
+    - Parallel SF311 API calls (~50% latency reduction)
+    - Duplicate ticket deduplication
+    - Expanded address normalization (13 street types)
+    - Photo thumbnails with emoji fallback
+    - Photo image error fallback fix
+    - Report count badge
+    - Skeleton loading cards
+    - Returning user flow fix (already-verified users skip re-verification)
+    - Enter key / auto-focus for form inputs
+    - Resend code button with 30s cooldown
+    - "Tap to see N more" expand hint
+    - Fetch 10 reports upfront (was 4)
+    - Keyboard navigation for address dropdown
+    - `public_id` / Case # in API response and UI
+    - Empty state ("All clear!") polish
+    - Removed misleading cursor-pointer
+    - Timezone-aware datetime comparison fix
+    - Bare `except` clause fix
+- 🔧 **FIXED: Manually deployed both projects with all accumulated improvements**
+  - Backend: `vercel --prod` → fresh deployment `backend-kzzplcekr-...` ✅
+  - Frontend: `vercel --prod` → fresh deployment `alert311-r8xytp0dp-...` ✅
+  - Verified: `public_id` now appears in API response (10/10 reports have real case numbers like "101003513333")
+- 🔧 **Backend fix: strip Cloudinary `#spot=...` fragment from photo URLs at API level**
+  - Frontend was already stripping it with `.split('#')[0]`, but it's cleaner to do it in the backend
+  - Now the API returns clean URLs directly (e.g. `https://...cloudinary.com/image/upload/v.../photo.jpg`)
+  - Frontend `.split('#')[0]` calls are now redundant but harmless (no-op on clean URLs)
+  - Committed as `04540ab`, deployed immediately
+- 📝 **Going forward: deploy to Vercel after every backend/frontend commit** (manual since no GitHub integration)
+- ✅ **Python syntax verified** - `py_compile` passes on `reports.py`
+- 🎉 **MILESTONE:** 326 consecutive operational checks! Critical deployment gap fixed, full week of improvements live.
+
 **8:00 AM - Hourly Check (All Systems Operational + 3 Improvements)** 🎉 ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding in ~0.76s
 - ✅ **Frontend responding** - HTTP 200 in ~0.11s
