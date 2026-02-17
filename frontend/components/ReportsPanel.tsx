@@ -205,9 +205,9 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-sm text-gray-900">{report.type}</span>
+                        <span className="font-semibold text-sm text-gray-900 truncate min-w-0">{report.type}</span>
                         <span
-                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                          className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
                             report.status === 'open'
                               ? 'bg-amber-100 text-amber-700'
                               : 'bg-emerald-100 text-emerald-700'
@@ -313,7 +313,7 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <span className="font-semibold text-gray-900">{report.type}</span>
+                        <span className="font-semibold text-gray-900 truncate min-w-0">{report.type}</span>
                         <span className="shrink-0 text-xs text-gray-400">{formatDate(report.date, report.raw_date)}</span>
                       </div>
                       <p className="text-sm text-gray-600 mb-2">{report.address}</p>

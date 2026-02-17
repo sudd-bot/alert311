@@ -23,6 +23,19 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Alert311",
   },
+  openGraph: {
+    title: "Alert311 - SF 311 Report Alerts",
+    description: "Get instant SMS alerts for 311 reports in San Francisco",
+    url: "https://alert311-ui.vercel.app",
+    siteName: "Alert311",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary",
+    title: "Alert311 - SF 311 Report Alerts",
+    description: "Get instant SMS alerts for 311 reports in San Francisco",
+  },
 };
 
 export const viewport: Viewport = {
