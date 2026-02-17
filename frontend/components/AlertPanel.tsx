@@ -44,8 +44,15 @@ export default function AlertPanel({
       });
 
       if (response.ok) {
-        setStep('verify');
-        addToast('success', 'Verification code sent!');
+        const data = await response.json().catch(() => ({}));
+        if (data.already_verified) {
+          // Returning user — already verified, skip to alert creation
+          setStep('create');
+          addToast('success', 'Welcome back!');
+        } else {
+          setStep('verify');
+          addToast('success', 'Verification code sent!');
+        }
       } else {
         const data = await response.json().catch(() => ({}));
         addToast('error', data.detail || 'Failed to send verification code');

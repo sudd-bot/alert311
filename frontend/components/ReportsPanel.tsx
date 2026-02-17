@@ -20,6 +20,34 @@ interface Report {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+// Skeleton card for loading state
+const ReportSkeleton = () => (
+  <div className="flex items-start gap-3 rounded-xl bg-gray-100/80 p-4 animate-pulse">
+    <div className="h-11 w-11 shrink-0 rounded-lg bg-gray-200" />
+    <div className="flex-1 space-y-2 pt-0.5">
+      <div className="h-3.5 w-3/4 rounded bg-gray-200" />
+      <div className="h-3 w-1/2 rounded bg-gray-200" />
+    </div>
+    <div className="h-3 w-10 shrink-0 rounded bg-gray-200 mt-0.5" />
+  </div>
+);
+
+const ReportSkeletonDesktop = () => (
+  <div className="rounded-xl bg-gray-50 p-4 animate-pulse">
+    <div className="flex items-start gap-3.5">
+      <div className="h-12 w-12 shrink-0 rounded-xl bg-gray-200" />
+      <div className="flex-1 space-y-2 pt-0.5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="h-4 w-2/5 rounded bg-gray-200" />
+          <div className="h-3 w-10 rounded bg-gray-200" />
+        </div>
+        <div className="h-3 w-3/5 rounded bg-gray-200" />
+        <div className="h-5 w-14 rounded-full bg-gray-200" />
+      </div>
+    </div>
+  </div>
+);
+
 // Map report types to icons
 const getReportIcon = (type: string): string => {
   const lowerType = type.toLowerCase();
@@ -121,9 +149,11 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
             {/* Reports list - Better card spacing */}
             <div className="space-y-3">
               {isLoading ? (
-                <div className="text-center py-8 text-gray-400 text-sm">
-                  Loading reports...
-                </div>
+                <>
+                  <ReportSkeleton />
+                  <ReportSkeleton />
+                  <ReportSkeleton />
+                </>
               ) : reports.length === 0 ? (
                 <div className="text-center py-8 text-gray-500 text-sm">
                   No recent reports found nearby
@@ -198,9 +228,12 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
           {/* Reports list - Better card spacing */}
           <div className="flex-1 overflow-y-auto p-5 space-y-3 scrollbar-hide">
             {isLoading ? (
-              <div className="text-center py-12 text-gray-400">
-                Loading reports...
-              </div>
+              <>
+                <ReportSkeletonDesktop />
+                <ReportSkeletonDesktop />
+                <ReportSkeletonDesktop />
+                <ReportSkeletonDesktop />
+              </>
             ) : reports.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 No recent reports found nearby

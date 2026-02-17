@@ -101,6 +101,7 @@ class ReportResponse(BaseModel):
 class SuccessResponse(BaseModel):
     success: bool
     message: str
+    already_verified: Optional[bool] = False
 
 
 class ErrorResponse(BaseModel):

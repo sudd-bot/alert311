@@ -22,7 +22,12 @@ async def register_user(user_data: UserRegister, db: Session = Depends(get_db)):
     existing_user = db.query(User).filter(User.phone == user_data.phone).first()
     if existing_user:
         if existing_user.verified:
-            raise HTTPException(status_code=400, detail="Phone number already registered and verified")
+            # Already verified — no need to re-verify, let them proceed directly to alert creation
+            return SuccessResponse(
+                success=True,
+                message="Phone number already verified",
+                already_verified=True
+            )
         # User exists but not verified, resend verification
         user = existing_user
     else:
