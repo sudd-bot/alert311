@@ -13,6 +13,7 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
   const [showResults, setShowResults] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { addToast } = useToast();
@@ -32,6 +33,7 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
       );
       const data = await response.json();
       setResults(data.features || []);
+      setHighlightedIndex(-1);
       setShowResults(true);
     } catch (error) {
       console.error('Geocoding error:', error);
@@ -133,6 +135,7 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
     function handleClickOutside(event: MouseEvent) {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setShowResults(false);
+        setHighlightedIndex(-1);
       }
     }
 
@@ -171,6 +174,22 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setShowResults(true)}
+          onKeyDown={(e) => {
+            if (!showResults || results.length === 0) return;
+            if (e.key === 'ArrowDown') {
+              e.preventDefault();
+              setHighlightedIndex((i) => Math.min(i + 1, results.length - 1));
+            } else if (e.key === 'ArrowUp') {
+              e.preventDefault();
+              setHighlightedIndex((i) => Math.max(i - 1, -1));
+            } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+              e.preventDefault();
+              handleSelect(results[highlightedIndex]);
+            } else if (e.key === 'Escape') {
+              setShowResults(false);
+              setHighlightedIndex(-1);
+            }
+          }}
           placeholder="Enter an address in SF..."
           className="w-full h-14 rounded-xl bg-white/10 pl-12 pr-4 text-base text-white placeholder:text-white/40 ring-1 ring-white/20 focus:ring-2 focus:ring-primary focus:outline-none transition-all"
           autoComplete="off"
@@ -213,7 +232,11 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
               <button
                 key={feature.id || index}
                 onClick={() => handleSelect(feature)}
-                className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-gray-100 transition-colors border-b border-gray-100 last:border-b-0"
+                onMouseEnter={() => setHighlightedIndex(index)}
+                onMouseLeave={() => setHighlightedIndex(-1)}
+                className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors border-b border-gray-100 last:border-b-0 ${
+                  highlightedIndex === index ? 'bg-gray-100' : 'hover:bg-gray-50'
+                }`}
               >
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500">
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
