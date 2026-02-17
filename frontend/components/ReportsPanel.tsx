@@ -129,18 +129,15 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                     key={report.id}
                     className="flex items-start gap-3 rounded-xl bg-gray-100/80 p-4"
                   >
-                    <div className="h-11 w-11 shrink-0 rounded-lg overflow-hidden bg-white shadow-sm">
-                      {report.photo_url ? (
+                    <div className="relative h-11 w-11 shrink-0 rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center text-xl">
+                      <span aria-hidden="true">{getReportIcon(report.type)}</span>
+                      {report.photo_url && (
                         <img
                           src={report.photo_url.split('#')[0]}
                           alt={report.type}
-                          className="h-full w-full object-cover"
+                          className="absolute inset-0 h-full w-full object-cover"
                           onError={(e) => { e.currentTarget.style.display = 'none'; }}
                         />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xl">
-                          {getReportIcon(report.type)}
-                        </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -205,18 +202,15 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                   className="rounded-xl bg-gray-50 p-4 hover:bg-gray-100 transition-colors cursor-pointer"
                 >
                   <div className="flex items-start gap-3.5">
-                    <div className="h-12 w-12 shrink-0 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-gray-100">
-                      {report.photo_url ? (
+                    <div className="relative h-12 w-12 shrink-0 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-gray-100 flex items-center justify-center text-xl">
+                      <span aria-hidden="true">{getReportIcon(report.type)}</span>
+                      {report.photo_url && (
                         <img
                           src={report.photo_url.split('#')[0]}
                           alt={report.type}
-                          className="h-full w-full object-cover"
+                          className="absolute inset-0 h-full w-full object-cover"
                           onError={(e) => { e.currentTarget.style.display = 'none'; }}
                         />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xl">
-                          {getReportIcon(report.type)}
-                        </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">

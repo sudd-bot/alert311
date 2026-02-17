@@ -9,6 +9,7 @@ import json
 import urllib.request
 import urllib.error
 import ssl
+import asyncio
 from datetime import datetime, timezone
 
 from ..core.database import get_db
@@ -61,29 +62,10 @@ async def get_nearby_reports(
         }
         context = ssl.create_default_context()
         
-        raw_tickets = []
-        
         # If filtering by address, fetch more tickets to ensure we get enough matches
         fetch_limit = 50 if address else limit
-        
-        # Fetch both recently_opened and recently_closed tickets
-        for scope in ["recently_opened", "recently_closed"]:
-            payload = {
-                "operationName": "ExploreQuery",
-                "variables": {
-                    "scope": scope,
-                    "order": {
-                        "by": "distance",
-                        "direction": "ascending",
-                        "latitude": lat,
-                        "longitude": lng,
-                    },
-                    "filters": {
-                        "ticket_type_id": ["963f1454-7c22-43be-aacb-3f34ae5d0dc7"],  # Parking violations
-                    },
-                    "limit": fetch_limit,
-                },
-                "query": """query ExploreQuery($scope: TicketsScopeEnum, $order: Json, $filters: Json, $limit: Int) {
+
+        GRAPHQL_QUERY = """query ExploreQuery($scope: TicketsScopeEnum, $order: Json, $filters: Json, $limit: Int) {
                     tickets(first: $limit, scope: $scope, order: $order, filters: $filters) {
                         nodes {
                             id
@@ -107,18 +89,40 @@ async def get_nearby_reports(
                         }
                     }
                 }"""
+
+        def fetch_scope(scope: str) -> list:
+            """Fetch tickets for a single scope (blocking I/O, runs in thread pool)."""
+            payload = {
+                "operationName": "ExploreQuery",
+                "variables": {
+                    "scope": scope,
+                    "order": {
+                        "by": "distance",
+                        "direction": "ascending",
+                        "latitude": lat,
+                        "longitude": lng,
+                    },
+                    "filters": {
+                        "ticket_type_id": ["963f1454-7c22-43be-aacb-3f34ae5d0dc7"],  # Parking violations
+                    },
+                    "limit": fetch_limit,
+                },
+                "query": GRAPHQL_QUERY,
             }
-            
-            # Make API request
             data = json.dumps(payload).encode('utf-8')
             req = urllib.request.Request(url, data=data, method="POST")
             for k, v in headers.items():
                 req.add_header(k, v)
-            
-            with urllib.request.urlopen(req, timeout=10, context=context) as response:
-                result = json.loads(response.read().decode('utf-8'))
-                tickets = result.get("data", {}).get("tickets", {}).get("nodes", [])
-                raw_tickets.extend(tickets)
+            with urllib.request.urlopen(req, timeout=10, context=context) as resp:
+                result = json.loads(resp.read().decode('utf-8'))
+                return result.get("data", {}).get("tickets", {}).get("nodes", [])
+
+        # Fetch recently_opened and recently_closed in parallel (cuts latency ~50%)
+        opened_tickets, closed_tickets = await asyncio.gather(
+            asyncio.to_thread(fetch_scope, "recently_opened"),
+            asyncio.to_thread(fetch_scope, "recently_closed"),
+        )
+        raw_tickets = opened_tickets + closed_tickets
         
         # Deduplicate by ticket ID (same ticket can appear in both recently_opened and recently_closed)
         seen_ids: set = set()
