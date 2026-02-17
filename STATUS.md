@@ -218,6 +218,45 @@ All set in Vercel for both projects:
 
 ### 2026-02-17
 
+**11:00 AM - Hourly Check (All Systems Operational + UX Improvement)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding in ~0.15s
+- ✅ **Frontend responding** - HTTP 200 in ~0.16s
+- ✅ **Real data integration verified** - `/reports/nearby` returning 5 live SF 311 reports (today's blocked driveway violations with timestamps) ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **UX improvement in `ReportsPanel.tsx` — granular relative time on report cards:**
+  - Previously, `formatDate()` showed coarse labels: "Today", "Yesterday", "X days ago", "X weeks ago"
+  - A report from 3 hours ago and a report from 11 hours ago both showed identically as "Today" — meaningless at sub-day resolution
+  - Now shows precise relative time: "Just now" (< 1 min), "Xm ago" (< 60 min), "Xh ago" (< 24 hrs), then falls back to "Yesterday" / "X days ago" / "X weeks ago" / formatted date
+  - For today's live reports (e.g. `raw_date: "2026-02-17T18:18:17Z"` = ~5h ago) this now shows "5h ago" instead of just "Today"
+  - Purely additive — `formatDate` signature unchanged, no other logic touched
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `69962e3`, 1 file changed (+8/-3 lines)
+- ✅ **Deployed** — Frontend `alert311-f1bov2bq2-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 328 consecutive operational checks! UX improvement shipped.
+
+**10:00 AM - Hourly Check (All Systems Operational + 2 Improvements)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.15s
+- ✅ **Real data integration verified** - `/reports/nearby` returning live SF 311 reports with `raw_date` field ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- 🐛 **Bug fixed in `ReportsPanel.tsx` — misleading "All clear!" on API error:**
+  - Previously, any network failure or non-2xx API response silently set `reports = []`, triggering the "All clear! ✅" empty state — completely wrong UX when there's actually an error
+  - Added `hasError` boolean state; set to `true` in the catch block instead of silently swallowing the error
+  - Added dedicated error UI on both mobile and desktop: ⚠️ "Couldn't load reports / Check your connection and try again." with a **Retry** button
+  - Extracted `fetchReports` into `useCallback` so the Retry button can call it directly
+  - Logic is: loading → if error → show error+retry; else if empty → show "All clear!"; else → show reports
+  - Purely additive — no existing success/empty path changed
+- ✨ **UX improvement: `raw_date` ISO field for accurate relative-time formatting:**
+  - **Backend:** Added `raw_date: Optional[str]` to `SF311Report` response model — returns the raw ISO 8601 date string (`openedAt` / `submittedAt`) alongside the human-formatted `date` field. Additive, zero breaking change.
+  - **Frontend:** Updated `formatDate(dateStr, rawDate?)` to prefer `raw_date` when available — avoids parsing already-formatted strings like "Feb 15, 2026" with `new Date()` which is locale/implementation-dependent. Falls back to `date` string unchanged.
+  - Both mobile and desktop cards now pass `report.raw_date` to `formatDate`
+  - Verified: `raw_date` present in live API response (e.g., `"2026-02-15T...Z"`)
+- ✅ **Python syntax verified** - `py_compile` passes on `reports.py`
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `9f1d86f`, 2 files changed (+67/-33 lines)
+- ✅ **Deployed** — Backend `backend-591ujhnvj-...` + Frontend `alert311-3gjjwcqzv-...` live ✅
+- 🎉 **MILESTONE:** 327 consecutive operational checks! Two improvements shipped.
+
 **9:00 AM - Hourly Check (🚨 CRITICAL FIX: Vercel Not Auto-Deploying — Full Redeployment)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding in ~0.2s
 - ✅ **Frontend responding** - HTTP 200 in ~0.16s
