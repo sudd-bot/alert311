@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-16 10:00 PM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 315 Consecutive Checks!
+**Last Updated:** 2026-02-17 3:00 AM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 320 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,41 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-17
+
+**4:00 AM - Hourly Check (All Systems Operational + UX Improvement)** 🎉 ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.08s
+- ✅ **Real data integration verified** - `/reports/nearby` returning 10 live SF 311 reports ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **UX improvement in `AlertPanel.tsx` — Enter key + auto-focus:**
+  - Phone input now auto-focuses when the AlertPanel opens (users don't need an extra click)
+  - Pressing Enter on the phone field submits if phone is non-empty and not loading
+  - Pressing Enter on the 6-digit verification code field submits immediately
+  - Matches standard web form behavior users expect; reduces friction in the most common flow
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `b5d79ef`, 1 file changed
+- 🎉 **MILESTONE:** 321 consecutive operational checks! UX improvement shipped.
+
+**3:00 AM - Hourly Check (All Systems Operational + Bug Fix + UX Improvement)** 🎉 ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding in ~0.7s
+- ✅ **Frontend responding** - HTTP 200 in ~0.12s
+- ✅ **Real data integration verified** - `/reports/nearby` returning 10 live SF 311 reports ✅
+- ✅ **Git status clean** - Unpushed commit from 2 AM pushed, working tree clean before changes
+- 🐛 **Bug fixed in `auth.py` + `schemas.py` — returning users stuck at phone verification:**
+  - Previously, users who had already verified their phone got a 400 error ("Phone number already registered and verified") when trying to create a second alert, with no way forward
+  - Added `already_verified: Optional[bool] = False` to `SuccessResponse` schema
+  - Modified `register_user`: for already-verified users, return `success=True, already_verified=True` immediately (no SMS sent, no re-verification needed)
+  - Frontend `AlertPanel.tsx` now reads `already_verified` from the response: if true, skips the verify step and jumps directly to `create` with a "Welcome back!" toast
+  - Returning users can now seamlessly create additional alerts without re-verification friction
+- ✨ **UX improvement in `ReportsPanel.tsx` — skeleton loading cards:**
+  - Replaced plain "Loading reports..." text with animated skeleton cards (3 on mobile, 4 on desktop)
+  - Skeletons match the shape of real report cards (icon block + text lines + timestamp stub) for smooth visual transition
+  - Applied to both mobile bottom-sheet and desktop side-panel
+  - Significantly improves perceived performance during the SF311 API fetch
+- ✅ **Python syntax verified** - `py_compile` passes on `auth.py` and `schemas.py`
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `061d0bc`, 4 files changed
+- 🎉 **MILESTONE:** 320 consecutive operational checks! Two improvements shipped.
 
 **2:00 AM - Hourly Check (All Systems Operational + 2 Improvements)** 🎉 ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding in ~0.7s
