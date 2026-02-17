@@ -113,14 +113,17 @@ Configured in `backend/vercel.json`:
 - **Geopy** - Geocoding (OpenStreetMap/Nominatim)
 - **httpx** - Async HTTP client for 311 API
 
-### Frontend (Coming)
+### Frontend
 - **Next.js** - React framework
-- **Mapbox/Leaflet** - Interactive maps
+- **Mapbox GL** - Interactive maps with dark theme
 - **TailwindCSS** - Styling
+- **react-map-gl** - React bindings for Mapbox
 
 ## API Documentation
 
-Once running, visit http://localhost:8000/docs for interactive API documentation.
+Interactive docs available at:
+- **Production**: https://backend-sigma-nine-42.vercel.app/docs
+- **Local dev**: http://localhost:8000/docs
 
 ## Report Types
 
@@ -147,7 +150,7 @@ See `STATUS.md` for detailed progress logs.
 
 ## Contributing
 
-This is a work in progress. Frontend coming soon!
+This is a work in progress. See `STATUS.md` for current state and known issues.
 
 ## License
 
