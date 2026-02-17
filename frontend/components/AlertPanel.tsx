@@ -105,13 +105,14 @@ export default function AlertPanel({
     }
   };
 
-  const verifyCode = async () => {
+  const verifyCode = async (codeOverride?: string) => {
+    const code = codeOverride ?? verificationCode;
     setIsLoading(true);
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: userPhone, code: verificationCode }),
+        body: JSON.stringify({ phone: userPhone, code }),
       });
 
       if (response.ok) {
@@ -305,7 +306,12 @@ export default function AlertPanel({
                       type="text"
                       inputMode="numeric"
                       value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                        setVerificationCode(val);
+                        // Auto-submit when all 6 digits are entered — standard OTP UX
+                        if (val.length === 6 && !isLoading) verifyCode(val);
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && verificationCode.length === 6 && !isLoading) {
                           verifyCode();
@@ -321,7 +327,7 @@ export default function AlertPanel({
                     Enter the 6-digit code sent to {userPhone}
                   </p>
                   <button
-                    onClick={verifyCode}
+                    onClick={() => verifyCode()}
                     disabled={verificationCode.length !== 6 || isLoading}
                     className="w-full h-12 rounded-xl bg-primary font-display font-semibold text-primary-foreground shadow-lg shadow-primary/25 disabled:opacity-50 disabled:shadow-none active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                   >
