@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-17 8:00 AM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 325 Consecutive Checks!
+**Last Updated:** 2026-02-17 12:00 PM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 329 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,27 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-17
+
+**12:00 PM - Hourly Check (All Systems Operational + 2 Improvements)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.15s
+- ✅ **Real data integration verified** - `/reports/nearby` returning live SF 311 reports ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- 🐛 **Layout fix in `ReportsPanel.tsx` — report type overflow in cards:**
+  - Long SF311 type names like "Blocked driveway and illegal parking" (39 chars) had no truncation on the type `<span>` in either mobile or desktop cards
+  - Mobile: the flex row `[type badge]` could push the status badge offscreen when the name was long
+  - Added `truncate min-w-0` to the type span in mobile cards; added `shrink-0` to the status badge so it's never squashed
+  - Added `truncate min-w-0` to the type span in desktop cards (prevent overflow in the `justify-between` header row)
+  - Purely additive CSS — no logic changed, no API changes
+- ✨ **Open Graph / Twitter Card meta tags added to `layout.tsx`:**
+  - Added `openGraph` block: title, description, url, siteName, type=website, locale=en_US
+  - Added `twitter` block: card=summary, title, description
+  - When the site URL is shared in iMessage, Twitter, Slack, etc., it now shows a proper link preview instead of a bare URL
+  - Purely additive — no existing functionality touched
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `82b252a`, 2 files changed (+16/-3 lines)
+- ✅ **Deployed** — Frontend `alert311-51cnq10qh-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 329 consecutive operational checks! Two improvements shipped.
 
 **11:00 AM - Hourly Check (All Systems Operational + UX Improvement)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding in ~0.15s
