@@ -11,6 +11,7 @@ interface ReportsPanelProps {
 
 interface Report {
   id: string;
+  public_id?: string | null;
   type: string;
   date: string;
   status: 'open' | 'closed';
@@ -155,8 +156,10 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                   <ReportSkeleton />
                 </>
               ) : reports.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 text-sm">
-                  No recent reports found nearby
+                <div className="text-center py-8">
+                  <div className="text-3xl mb-2" aria-hidden="true">✅</div>
+                  <p className="font-semibold text-gray-700 text-sm">All clear!</p>
+                  <p className="text-gray-500 text-xs mt-1">No recent 311 reports near this address.</p>
                 </div>
               ) : (
                 (isExpanded ? reports : reports.slice(0, 4)).map((report) => (
@@ -189,6 +192,9 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                         </span>
                       </div>
                       <p className="text-xs text-gray-600 line-clamp-1">{report.address}</p>
+                      {report.public_id && (
+                        <p className="text-[10px] text-gray-400 mt-0.5">Case #{report.public_id}</p>
+                      )}
                     </div>
                     <span className="shrink-0 text-[10px] text-gray-400 font-medium mt-0.5">{formatDate(report.date)}</span>
                   </div>
@@ -245,14 +251,16 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                 <ReportSkeletonDesktop />
               </>
             ) : reports.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                No recent reports found nearby
+              <div className="text-center py-12">
+                <div className="text-4xl mb-3" aria-hidden="true">✅</div>
+                <p className="font-semibold text-gray-700">All clear!</p>
+                <p className="text-sm text-gray-500 mt-1">No recent 311 reports near this address.</p>
               </div>
             ) : (
               reports.map((report) => (
                 <div
                   key={report.id}
-                  className="rounded-xl bg-gray-50 p-4 hover:bg-gray-100 transition-colors cursor-pointer"
+                  className="rounded-xl bg-gray-50 p-4 hover:bg-gray-100 transition-colors"
                 >
                   <div className="flex items-start gap-3.5">
                     <div className="relative h-12 w-12 shrink-0 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-gray-100 flex items-center justify-center text-xl">
@@ -272,15 +280,20 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                         <span className="shrink-0 text-xs text-gray-400">{formatDate(report.date)}</span>
                       </div>
                       <p className="text-sm text-gray-600 mb-2">{report.address}</p>
-                      <span
-                        className={`inline-block rounded-full px-2.5 py-1 text-xs font-bold ${
-                          report.status === 'open'
-                            ? 'bg-amber-100 text-amber-700'
-                            : 'bg-emerald-100 text-emerald-700'
-                        }`}
-                      >
-                        {report.status}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`inline-block rounded-full px-2.5 py-1 text-xs font-bold ${
+                            report.status === 'open'
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-emerald-100 text-emerald-700'
+                          }`}
+                        >
+                          {report.status}
+                        </span>
+                        {report.public_id && (
+                          <span className="text-xs text-gray-400">Case #{report.public_id}</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
