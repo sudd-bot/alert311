@@ -218,6 +218,44 @@ All set in Vercel for both projects:
 
 ### 2026-02-17
 
+**2:00 AM - Hourly Check (All Systems Operational + 2 Improvements)** 🎉 ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding in ~0.7s
+- ✅ **Frontend responding** - HTTP 200 in 0.12s
+- ✅ **Real data integration verified** - `/reports/nearby` returning live SF 311 reports (blocked driveway violations with photos, full addresses, coordinates) ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- 🐛 **Bug fixed in `reports.py` — incomplete address normalization:**
+  - Previous code only normalized "street" → "st" and "avenue" → "ave"
+  - SF311 or Mapbox geocoding returns other full street types (boulevard, terrace, drive, court, place, lane, road, circle, highway, parkway, square) that weren't being abbreviated before comparison
+  - Extracted logic into `_normalize_addr()` helper, now covers 13 street-type substitutions applied symmetrically to both the user's query and the SF311 result address
+  - Ensures address-filtered results don't silently miss tickets due to abbreviation mismatch
+- ✨ **UX improvement in `ReportsPanel.tsx` — report count badge:**
+  - Both mobile bottom-sheet header and desktop side-panel header now show a small pill badge with the report count (e.g. "Nearby Reports **3**") once reports have loaded
+  - Badge only appears when count > 0 (not during loading, not when empty)
+  - Gives users instant signal of how many incidents were found before they scroll
+- ✅ **Python syntax verified** - `py_compile` passes on `reports.py`
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `6fce975`, 2 files changed
+- 🎉 **MILESTONE:** 319 consecutive operational checks! Two improvements shipped.
+
+**1:00 AM - Hourly Check (All Systems Operational + 2 Improvements)** 🎉 ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding in 0.73s
+- ✅ **Frontend responding** - HTTP 200 in 0.12s
+- ✅ **Real data integration verified** - `/reports/nearby` returning 5 live SF 311 reports (blocked driveway violations: 1321 Jessie St, 32 11 Th St, 62 Polk St, 99 Oak St, 79 Franklin St) ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- ⚡ **Performance improvement in `reports.py` — parallel SF311 API calls:**
+  - Previously, `recently_opened` and `recently_closed` scopes were fetched sequentially in a for-loop
+  - Replaced with `asyncio.gather` + `asyncio.to_thread` so both requests fire simultaneously
+  - Expected latency reduction: ~50% for the SF311 fetch portion of each `/reports/nearby` call
+- 🐛 **Bug fixed in `ReportsPanel.tsx` — broken image fallback:**
+  - When `photo_url` is set but the image fails to load, the previous code hid the `<img>` via `display:none` but left an empty white box (the emoji fallback was in an else-branch that never ran)
+  - Fixed by always rendering the emoji in the container background, with the photo absolutely positioned on top
+  - If image loads: photo covers emoji seamlessly. If image errors: `display:none` reveals the emoji underneath
+  - Applied to both mobile bottom-sheet and desktop side-panel report cards
+- ✅ **Python syntax verified** - `py_compile` passes on `reports.py`
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `90f9abb`, 2 files changed
+- 🎉 **MILESTONE:** 318 consecutive operational checks! Two improvements shipped.
+
 **12:00 AM - Hourly Check (All Systems Operational + 2 Improvements)** 🎉 ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding in 0.59s
 - ✅ **Frontend responding** - HTTP 200 in 0.11s
