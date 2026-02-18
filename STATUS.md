@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-17 3:00 PM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 332 Consecutive Checks!
+**Last Updated:** 2026-02-17 4:00 PM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 333 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,21 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-17
+
+**4:00 PM - Hourly Check (All Systems Operational + Distance Feature)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.11s
+- ✅ **Real data integration verified** - `/reports/nearby` returning live SF 311 reports with new `distance_meters` field ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **New feature: distance from searched address on all report cards:**
+  - **Backend:** Added `_haversine_meters()` helper (Haversine great-circle formula using Earth radius 6,371,000m); `SF311Report` model now includes `distance_meters: Optional[float]` calculated from the query lat/lng to each ticket's location — rounded to 1 decimal place. Purely additive, zero breaking change.
+  - **Frontend:** Added `distance_meters?: number | null` to `Report` interface; added `formatDistance()` helper — converts raw meters to human-readable strings: "52m away" (< 100m), "0.3mi away" (≥ 100m in miles). Both mobile and desktop cards show distance alongside Case # so users know exactly how far each incident is from their searched address.
+  - Verified live: `distance_meters: 1574.1` returned correctly from production API (1321 Jessie St query)
+- ✅ **Python syntax verified** - `py_compile` passes on `reports.py`
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `9e033b1`, 2 files changed (+40/-6 lines)
+- ✅ **Deployed** — Backend `backend-58j1od1u4-...` + Frontend `alert311-jonrtikj2-...` live ✅
+- 🎉 **MILESTONE:** 333 consecutive operational checks! Distance feature shipped.
 
 **3:00 PM - Hourly Check (All Systems Operational + UX Improvement)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
