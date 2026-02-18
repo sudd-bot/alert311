@@ -132,6 +132,13 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
     const timer = setTimeout(() => {
       if (query) {
         searchAddress(query);
+      } else {
+        // Clear stale results when input is emptied — without this, the old dropdown
+        // stays visible after the user backspaces to an empty field because the
+        // searchAddress function (which calls setResults([])) is only invoked when
+        // query is truthy.
+        setResults([]);
+        setShowResults(false);
       }
     }, 300);
 

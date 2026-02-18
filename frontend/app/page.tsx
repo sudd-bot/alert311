@@ -30,6 +30,8 @@ export default function Home() {
 
   const [showAlertPanel, setShowAlertPanel] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  /** True once the user has successfully created an alert for the current location. */
+  const [hasAlert, setHasAlert] = useState(false);
   const [reportMarkers, setReportMarkers] = useState<Report[]>([]);
   // popupReport: the primary (first) report in the clicked cluster.
   // popupGroup: the full set of reports at that lat/lng — drives multi-report popup UI.
@@ -66,6 +68,7 @@ export default function Home() {
 
   const handleAlertCreated = useCallback(() => {
     setShowAlertPanel(false);
+    setHasAlert(true);
   }, []);
 
   const handleCreateNew = () => {
@@ -94,6 +97,7 @@ export default function Home() {
     setPopupReport(null);
     setPopupGroup([]);
     setPopupGroupIndex(0);
+    setHasAlert(false);
     mapRef.current?.flyTo({
       center: [SF_CENTER.lng, SF_CENTER.lat],
       zoom: 12,
@@ -359,9 +363,17 @@ export default function Home() {
               <div className="glass flex-1 rounded-xl px-4 py-3 ring-1 ring-white/10">
                 <div className="flex items-center gap-2.5">
                   <div className="h-2 w-2 rounded-full bg-primary animate-pulse shrink-0" />
-                  <span className="text-sm font-medium text-white/90 truncate">
+                  <span className="text-sm font-medium text-white/90 truncate flex-1 min-w-0">
                     {selectedLocation.address.split(',')[0]}
                   </span>
+                  {hasAlert && (
+                    <span
+                      className="shrink-0 flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[11px] font-semibold text-emerald-300 ring-1 ring-emerald-500/30"
+                      title="Alert active for this location"
+                    >
+                      🔔 Alert active
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
