@@ -52,6 +52,8 @@ export default function AlertPanel({
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<'phone' | 'verify' | 'create' | 'success'>('phone');
   const [resendCooldown, setResendCooldown] = useState(0);
+  /** True when the user already has an active alert for the same address + report type */
+  const [isDuplicate, setIsDuplicate] = useState(false);
   const { addToast } = useToast();
 
   // Pre-fill phone from localStorage so returning users don't have to retype it
@@ -63,6 +65,38 @@ export default function AlertPanel({
       // localStorage unavailable (private browsing, permissions) — silently skip
     }
   }, []);
+
+  /**
+   * Check if the user already has an active alert for this address + report type.
+   * Runs whenever the user reaches the 'create' step or changes the selected type.
+   * Purely informational — duplicate creation is allowed; the warning just prevents accidents.
+   */
+  useEffect(() => {
+    if (step !== 'create' || !userPhone) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/alerts?phone=${encodeURIComponent(userPhone)}`
+        );
+        if (!res.ok || cancelled) return;
+        const existingAlerts: Array<{ address: string; report_type_id: string; active: boolean }> = await res.json();
+        if (cancelled) return;
+        // Normalize the current address for comparison (strip city/state suffix)
+        const localStreet = address.split(',')[0].trim().toLowerCase();
+        const hasDuplicate = existingAlerts.some(
+          (a) =>
+            a.active &&
+            a.report_type_id === selectedReportType &&
+            a.address.toLowerCase().includes(localStreet)
+        );
+        setIsDuplicate(hasDuplicate);
+      } catch {
+        // Network/parse error — silently skip; no need to block the UI
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [step, userPhone, selectedReportType, address]);
 
   // Countdown timer for resend cooldown — starts when entering verify step
   useEffect(() => {
@@ -415,15 +449,29 @@ export default function AlertPanel({
                     </div>
                   </div>
 
-                  <div className="rounded-xl bg-amber-50 p-4">
-                    <p className="text-sm text-amber-800">
-                      <span className="font-semibold">You'll receive SMS alerts</span> when{' '}
-                      <span className="font-semibold">
-                        {REPORT_TYPES.find((t) => t.id === selectedReportType)?.name}
-                      </span>{' '}
-                      reports are filed near this location.
-                    </p>
-                  </div>
+                  {isDuplicate ? (
+                    /* Duplicate-alert warning — informational only, creation is still allowed */
+                    <div className="rounded-xl bg-sky-50 border border-sky-100 p-4 flex gap-3">
+                      <span className="shrink-0 text-lg" aria-hidden="true">ℹ️</span>
+                      <p className="text-sm text-sky-800">
+                        You already have an active{' '}
+                        <span className="font-semibold">
+                          {REPORT_TYPES.find((t) => t.id === selectedReportType)?.name}
+                        </span>{' '}
+                        alert for this address. Creating another will send you duplicate SMS notifications.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl bg-amber-50 p-4">
+                      <p className="text-sm text-amber-800">
+                        <span className="font-semibold">You'll receive SMS alerts</span> when{' '}
+                        <span className="font-semibold">
+                          {REPORT_TYPES.find((t) => t.id === selectedReportType)?.name}
+                        </span>{' '}
+                        reports are filed near this location.
+                      </p>
+                    </div>
+                  )}
 
                   <button
                     onClick={createAlert}
