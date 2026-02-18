@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
-import Map, { Marker, Popup, MapRef } from 'react-map-gl/mapbox';
+import { useState, useCallback, useRef, useMemo } from 'react';
+import MapboxMap, { Marker, Popup, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import AddressSearch from '@/components/AddressSearch';
 import AlertPanel from '@/components/AlertPanel';
@@ -32,6 +32,19 @@ export default function Home() {
   const [hasSearched, setHasSearched] = useState(false);
   const [reportMarkers, setReportMarkers] = useState<Report[]>([]);
   const [popupReport, setPopupReport] = useState<Report | null>(null);
+
+  // Group markers that share the exact same lat/lng (e.g. intersection reports).
+  // Shows a count badge on clustered markers so stacked dots are visible.
+  const groupedMarkers = useMemo<Report[][]>(() => {
+    const groups = new Map<string, Report[]>();
+    reportMarkers.forEach((r) => {
+      const key = `${r.latitude.toFixed(6)},${r.longitude.toFixed(6)}`;
+      const group = groups.get(key) ?? [];
+      group.push(r);
+      groups.set(key, group);
+    });
+    return Array.from(groups.values());
+  }, [reportMarkers]);
 
   const handleLocationSelect = useCallback(
     (address: string, lat: number, lng: number) => {
@@ -97,7 +110,7 @@ export default function Home() {
     <div className="relative h-dvh w-screen overflow-hidden bg-black">
       {/* Full-screen Map */}
       <div className="absolute inset-0">
-        <Map
+        <MapboxMap
           ref={mapRef}
           initialViewState={{
             longitude: SF_CENTER.lng,
@@ -113,26 +126,37 @@ export default function Home() {
           ]}
           attributionControl={false}
         >
-          {/* Report markers — amber (open) or emerald (closed) dots; clickable for popup */}
-          {reportMarkers.map((report) => (
-            <Marker
-              key={report.id}
-              longitude={report.longitude}
-              latitude={report.latitude}
-              anchor="center"
-              onClick={(e) => {
-                e.originalEvent.stopPropagation();
-                setPopupReport(report);
-              }}
-            >
-              <div
-                className={`h-3.5 w-3.5 rounded-full border-2 border-white shadow-md cursor-pointer hover:scale-125 transition-transform ${
-                  report.status === 'open' ? 'bg-amber-400' : 'bg-emerald-400'
-                }`}
-                title={`${report.type} — ${formatAddress(report.address)}`}
-              />
-            </Marker>
-          ))}
+          {/* Report markers — grouped by lat/lng; clustered markers show a count badge */}
+          {groupedMarkers.map((group) => {
+            const primary = group[0]; // Most relevant report (sorted by distance + recency by backend)
+            const count = group.length;
+            return (
+              <Marker
+                key={primary.id}
+                longitude={primary.longitude}
+                latitude={primary.latitude}
+                anchor="center"
+                onClick={(e) => {
+                  e.originalEvent.stopPropagation();
+                  setPopupReport(primary);
+                }}
+              >
+                <div className="relative cursor-pointer hover:scale-125 transition-transform">
+                  <div
+                    className={`h-3.5 w-3.5 rounded-full border-2 border-white shadow-md ${
+                      primary.status === 'open' ? 'bg-amber-400' : 'bg-emerald-400'
+                    }`}
+                    title={`${count > 1 ? `${count} reports` : primary.type} — ${formatAddress(primary.address)}`}
+                  />
+                  {count > 1 && (
+                    <span className="absolute -top-2 -right-2 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-white bg-gray-700 text-[7px] font-bold leading-none text-white shadow">
+                      {count}
+                    </span>
+                  )}
+                </div>
+              </Marker>
+            );
+          })}
 
           {/* Popup for clicked report marker */}
           {popupReport && (
@@ -213,7 +237,7 @@ export default function Home() {
               </div>
             </Marker>
           )}
-        </Map>
+        </MapboxMap>
       </div>
 
       {/* Initial State: Centered Search */}

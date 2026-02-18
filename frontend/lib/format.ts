@@ -56,7 +56,11 @@ export function formatDate(dateStr: string, rawDate?: string | null): string {
     if (diffDays === 1) return 'Yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    return date.toLocaleDateString();
+    // For older dates: "Feb 9" (current year) or "Feb 9, 2025" (past year) — consistent across locales
+    const month = date.toLocaleString('en-US', { month: 'short' });
+    const day = date.getDate();
+    const year = date.getFullYear();
+    return year === now.getFullYear() ? `${month} ${day}` : `${month} ${day}, ${year}`;
   } catch {
     return dateStr;
   }

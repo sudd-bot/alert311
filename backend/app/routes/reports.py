@@ -11,7 +11,7 @@ import urllib.request
 import urllib.error
 import ssl
 import asyncio
-from datetime import datetime, timezone
+from datetime import datetime
 
 from ..core.database import get_db
 from ..models import User, Report, Alert
@@ -263,7 +263,6 @@ async def get_nearby_reports(
         
         # Sort by distance (closest first) — most spatially relevant for map exploration.
         # Ties (same distance) break on recency (newest first) so fresh reports surface naturally.
-        _EPOCH = datetime.min.replace(tzinfo=timezone.utc)
         reports.sort(key=lambda x: (
             x["report"].distance_meters if x["report"].distance_meters is not None else float('inf'),
             -(x["date_obj"].timestamp() if x["date_obj"] else 0),
