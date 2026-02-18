@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 6:00 AM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 347 Consecutive Checks!
+**Last Updated:** 2026-02-18 7:00 AM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 348 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,27 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**7:00 AM - Hourly Check (All Systems Operational + Active Card Highlighting + Icon Improvements)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.11s
+- ✅ **Real data integration verified** - `/reports/nearby` returning live SF 311 reports sorted by distance ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **New UX feature: active report card highlighting in ReportsPanel:**
+  - **Problem:** The card-to-map link shipped at 6 AM was one-directional: tap a card → popup opens. But there was no reverse signal: if you were looking at the popup and wondered "which card is this?" or if you paginated through cluster reports (Prev/Next), the panel cards gave no indication of which one was currently active.
+  - **Fix:** Added `activeReportId?: string | null` prop to `ReportsPanel`. When this matches a card's `report.id`, that card shows `bg-primary/10 ring-1 ring-primary/30` highlight (a subtle blue tint + border), both on mobile and desktop.
+  - `page.tsx` derives the active ID as `popupGroup[popupGroupIndex]?.id` (cluster-aware) or `popupReport?.id` (single report) — so as users page through Prev/Next in a cluster popup, the highlighted card updates in the panel.
+  - When the popup closes (`popupReport` → null), the highlight clears immediately.
+  - Purely additive — no existing card click/hover logic changed. TypeScript zero errors.
+- ✨ **`getReportIcon` improvements in `ReportsPanel.tsx`:**
+  - Added `'driveway'` to parking icon matcher — "Blocked driveway and illegal parking" was already matched via `'parking'` substring but explicit is cleaner for future type name changes
+  - Added `'homeless'` / `'encampment'` → 🏕️ (was falling through to 📍)
+  - Added `'light'` → 💡 (catches "Streetlight" even without the full word — broader match)
+  - All 6 coming-soon types in `AlertPanel` now have correct icon fallbacks
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `ca15217`, 2 files changed (+17/-5 lines)
+- ✅ **Deployed** — Frontend `alert311-63i3los69-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 348 consecutive operational checks! Active card highlighting + icon improvements shipped.
 
 **6:00 AM - Hourly Check (All Systems Operational + Card-to-Map Click + Cleanup)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
