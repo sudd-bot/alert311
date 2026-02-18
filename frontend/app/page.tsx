@@ -119,7 +119,7 @@ export default function Home() {
               anchor="center"
             >
               <div
-                className={`h-3 w-3 rounded-full border-2 border-white shadow-md ${
+                className={`h-3.5 w-3.5 rounded-full border-2 border-white shadow-md cursor-default ${
                   report.status === 'open' ? 'bg-amber-400' : 'bg-emerald-400'
                 }`}
                 title={`${report.type} — ${report.address}`}

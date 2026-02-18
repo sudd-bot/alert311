@@ -166,10 +166,19 @@ export default function AlertPanel({
 
   const resendCode = async () => {
     // Re-use sendVerification; it will stay on 'verify' step (setStep('verify') is a no-op here)
-    // and shows "Verification code sent!" toast on success.
-    // Reset cooldown after the call regardless of outcome.
+    // because step is already 'verify' → no state change → useEffect([step]) does NOT re-run →
+    // the countdown interval is NOT restarted automatically. We restart it manually here.
     await sendVerification();
     setResendCooldown(30);
+    const interval = setInterval(() => {
+      setResendCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
   };
 
   return (
