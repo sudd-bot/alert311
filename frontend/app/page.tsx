@@ -7,7 +7,7 @@ import AddressSearch from '@/components/AddressSearch';
 import AlertPanel from '@/components/AlertPanel';
 import ReportsPanel, { type Report } from '@/components/ReportsPanel';
 import MapControls from '@/components/MapControls';
-import { formatDistance, formatDate } from '@/lib/format';
+import { formatDistance, formatDate, formatAddress } from '@/lib/format';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 const SF_CENTER = { lat: 37.7749, lng: -122.4194 };
@@ -129,7 +129,7 @@ export default function Home() {
                 className={`h-3.5 w-3.5 rounded-full border-2 border-white shadow-md cursor-pointer hover:scale-125 transition-transform ${
                   report.status === 'open' ? 'bg-amber-400' : 'bg-emerald-400'
                 }`}
-                title={`${report.type} — ${report.address}`}
+                title={`${report.type} — ${formatAddress(report.address)}`}
               />
             </Marker>
           ))}
@@ -167,7 +167,7 @@ export default function Home() {
                       </svg>
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 line-clamp-1">{popupReport.address}</p>
+                  <p className="text-xs text-gray-500 line-clamp-1">{formatAddress(popupReport.address)}</p>
                   <p className="text-[10px] text-gray-400 mb-2">{formatDate(popupReport.date, popupReport.raw_date)}</p>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${

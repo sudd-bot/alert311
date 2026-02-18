@@ -261,10 +261,13 @@ async def get_nearby_reports(
             
             reports = filtered_reports
         
-        # Sort by date (newest first), then limit to requested amount
-        # Use timezone-aware fallback so comparison with tz-aware date_obj doesn't raise TypeError
+        # Sort by distance (closest first) — most spatially relevant for map exploration.
+        # Ties (same distance) break on recency (newest first) so fresh reports surface naturally.
         _EPOCH = datetime.min.replace(tzinfo=timezone.utc)
-        reports.sort(key=lambda x: x["date_obj"] if x["date_obj"] else _EPOCH, reverse=True)
+        reports.sort(key=lambda x: (
+            x["report"].distance_meters if x["report"].distance_meters is not None else float('inf'),
+            -(x["date_obj"].timestamp() if x["date_obj"] else 0),
+        ))
         return [r["report"] for r in reports[:limit]]
         
     except urllib.error.HTTPError as e:

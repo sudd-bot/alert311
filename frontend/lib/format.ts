@@ -3,6 +3,21 @@
  */
 
 /**
+ * Format an SF311 address for display.
+ * "Intersection Annie St, Stevenson St" → "Annie St & Stevenson St"
+ * "123 Main St" → "123 Main St" (unchanged)
+ */
+export function formatAddress(addr: string): string {
+  if (!addr) return addr;
+  // "Intersection X, Y" → "X & Y" (SF311 intersection format)
+  const match = addr.match(/^Intersection\s+(.+?),\s*(.+)$/i);
+  if (match) {
+    return `${match[1].trim()} & ${match[2].trim()}`;
+  }
+  return addr;
+}
+
+/**
  * Format a distance in meters into a human-readable string.
  * < 100m  → "52m away"
  * ≥ 100m  → "0.3mi away"

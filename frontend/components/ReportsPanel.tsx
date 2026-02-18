@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { formatDistance, formatDate } from '@/lib/format';
+import { formatDistance, formatDate, formatAddress } from '@/lib/format';
 
 interface ReportsPanelProps {
   address: string;
@@ -198,7 +198,7 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
                           {report.status}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-600 line-clamp-1">{report.address}</p>
+                      <p className="text-xs text-gray-600 line-clamp-1">{formatAddress(report.address)}</p>
                       <div className="flex items-center gap-2 mt-0.5">
                         {report.public_id && (
                           <p className="text-[10px] text-gray-400">Case #{report.public_id}</p>
@@ -303,7 +303,7 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
                         <span className="font-semibold text-gray-900 truncate min-w-0">{report.type}</span>
                         <span className="shrink-0 text-xs text-gray-400">{formatDate(report.date, report.raw_date)}</span>
                       </div>
-                      <p className="text-sm text-gray-600 mb-2">{report.address}</p>
+                      <p className="text-sm text-gray-600 mb-2">{formatAddress(report.address)}</p>
                       <div className="flex items-center gap-2">
                         <span
                           className={`inline-block rounded-full px-2.5 py-1 text-xs font-bold ${
