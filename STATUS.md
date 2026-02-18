@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-17 5:00 PM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 334 Consecutive Checks!
+**Last Updated:** 2026-02-17 6:00 PM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 335 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,25 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-17
+
+**6:00 PM - Hourly Check (All Systems Operational + Label Fix + UI Polish)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.15s
+- ✅ **Real data integration verified** - `/reports/nearby` returning live SF 311 reports ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- 🐛 **Label fix: "Parking on Sidewalk" → "Blocked Driveway & Parking" across frontend + backend:**
+  - The alert creation panel offered "Parking on Sidewalk" as the first report type, but the SF311 UUID `963f1454-...` actually corresponds to "Blocked driveway and illegal parking" — a misleading disconnect between what users selected and what alerts they'd receive
+  - Updated `AlertPanel.tsx` REPORT_TYPES array, `alerts.py` REPORT_TYPE_NAMES dict — both now use "Blocked Driveway & Parking" (concise but accurate)
+  - `AlertList.tsx` (unused/future component) also fixed: was showing raw UUID string instead of a human-readable name; now resolves via `report_type_name` from API or REPORT_TYPE_NAMES lookup
+- ✨ **UI improvement in `MapControls.tsx` — recenter button icon:**
+  - Previous icon was a map/waypoint path (two routes) — visually ambiguous for "recenter map"
+  - Replaced with a crosshair icon (center dot + 4 cardinal tick marks) — universally recognized symbol for "go to current location / center the view"
+  - Zero logic change — purely visual
+- ✅ **Python syntax verified** - `py_compile` passes on `alerts.py`
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `5ef4a02`, 4 files changed (+17/-4 lines)
+- ✅ **Deployed** — Backend `backend-eurb3hg5v-...` + Frontend `alert311-2ocwof0op-...` live ✅
+- 🎉 **MILESTONE:** 335 consecutive operational checks! Label fix + recenter icon polish shipped.
 
 **5:00 PM - Hourly Check (All Systems Operational + Report Map Markers)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
