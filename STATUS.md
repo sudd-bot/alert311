@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 7:00 AM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 348 Consecutive Checks!
+**Last Updated:** 2026-02-18 8:00 AM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 349 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,32 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**8:00 AM - Hourly Check (All Systems Operational + Dead Code Removal + Accessibility)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.22s
+- ✅ **Real data integration verified** - `/reports/nearby` returning live SF 311 reports sorted by distance ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- 🧹 **Dead code removal: deleted `frontend/app/new/page.tsx`** (400+ lines):
+  - **Problem:** This was a design prototype from Feb 9 (early project days) exploring an alternative visual style (brutalist orange/cream theme). It lived at the `/new` route path but was never linked from the main UI, never shipped as the default, and had fallen increasingly out of sync with production:
+    - Used the old `Map` import alias (before the `MapboxMap` rename fix that resolved TS errors)
+    - Still passing `address` param to `/reports/nearby` — the bug we fixed Feb 17 11 PM that was causing all real users to see zero results
+    - `handleCreateAlert` was a 1.5s stub that did nothing — completely non-functional
+  - **Fix:** Removed the entire `app/new/` directory. Cleared `.next/` build cache (which held stale type declaration files for the deleted route — they caused TypeScript errors without the cache bust).
+  - Result: Codebase is -626 lines smaller, no dead routes, and `tsc --noEmit` still passes cleanly.
+- ♿ **Accessibility: keyboard support for report cards in `ReportsPanel.tsx`:**
+  - **Problem:** Clickable report cards used `div` elements with `onClick` — functionally interactive but completely inaccessible to keyboard users (Tab key skips them) and screen readers (no role or label).
+  - **Fix (both mobile + desktop cards):**
+    - Added `role="button"` — signals to assistive tech that this div is interactive
+    - Added `tabIndex={0}` — makes cards reachable via Tab key
+    - Added `aria-label="View {type} at {address} on map"` — describes the action clearly for screen readers
+    - Added `onKeyDown`: Enter and Space fire the same handler as `onClick` (standard button semantics); `e.preventDefault()` suppresses page scroll on Space
+    - Added `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60` — keyboard focus ring using the primary color, only shown for keyboard focus (not mouse clicks) thanks to `:focus-visible`
+  - All changes are conditional on `onReportClick` being defined — cards without a click handler (hypothetical future read-only use) are unaffected.
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `bf53234`, 2 files changed (+21/-626 lines)
+- ✅ **Deployed** — Frontend `alert311-qauqvaohg-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 349 consecutive operational checks! Dead code removed + accessibility shipped.
 
 **7:00 AM - Hourly Check (All Systems Operational + Active Card Highlighting + Icon Improvements)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
