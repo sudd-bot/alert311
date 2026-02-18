@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 4:00 AM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 345 Consecutive Checks!
+**Last Updated:** 2026-02-18 5:00 AM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 346 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,31 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**5:00 AM - Hourly Check (All Systems Operational + Cluster Popup Pagination + Backend Limit Validation)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.09s
+- ✅ **Real data integration verified** - `/reports/nearby` returning live SF 311 reports sorted by distance ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **Frontend `page.tsx`: multi-report cluster popup with Prev/Next navigation:**
+  - **Problem:** Clicking a cluster marker (e.g., the Annie St & Stevenson St intersection, which regularly has 2-3 blocked driveway reports) only showed the primary (first/closest) report. The other reports in the cluster were completely inaccessible from the popup — users had no way to know there were more.
+  - **Fix:** Added `popupGroup: Report[]` and `popupGroupIndex: number` state alongside existing `popupReport`. When a cluster marker is clicked, the full group is stored. The popup now:
+    - Shows which report is active in the cluster: `"1 of 3 at this location"` subtitle in primary blue
+    - Renders **← Prev** / **Next →** arrow buttons below the status/distance row to page through all reports at that location
+    - Buttons are disabled at the first/last report respectively (standard pagination)
+    - Single-report popups are entirely unchanged — the cluster UI only appears when `popupGroup.length > 1`
+  - `handleBack()` and `onClose` both reset `popupGroup` and `popupGroupIndex` to avoid stale state
+  - Verified TypeScript: zero errors
+- 🔒 **Backend `reports.py`: `limit` parameter validation (DoS protection):**
+  - **Problem:** `GET /reports/nearby?limit=10000` was silently accepted — the `fetch_limit = 50 if address else limit` logic meant a huge limit would trigger 10,000 SF311 API calls in parallel (two `asyncio.gather` threads), a trivial unintentional DoS vector.
+  - **Fix:** Changed `limit: int = 10` to `limit: Annotated[int, Query(ge=1, le=50)] = 10`. FastAPI/Pydantic now rejects any value outside 1–50 with a structured 422 Unprocessable Entity response before the handler runs.
+  - Verified: `limit=100` returns HTTP 422; `limit=10` returns HTTP 200 with data.
+  - Imported `Query` from `fastapi` and `Annotated` from `typing` (both already available in the env).
+- ✅ **Python syntax verified** - `py_compile` passes on `reports.py`
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `26762b7`, 2 files changed (+109/-62 lines)
+- ✅ **Deployed** — Backend `backend-60m3dmk0t-...` + Frontend `alert311-6pffct065-...` live ✅
+- 🎉 **MILESTONE:** 346 consecutive operational checks! Cluster popup navigation + limit validation shipped.
 
 **4:00 AM - Hourly Check (All Systems Operational + Marker Clustering + Date Fix + Dead Code)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
