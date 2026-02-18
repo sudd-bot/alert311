@@ -31,7 +31,7 @@ const normalizePhone = (phone: string): string => {
 };
 
 const REPORT_TYPES = [
-  { id: '963f1454-7c22-43be-aacb-3f34ae5d0dc7', name: 'Parking on Sidewalk', icon: '🚗' },
+  { id: '963f1454-7c22-43be-aacb-3f34ae5d0dc7', name: 'Blocked Driveway & Parking', icon: '🚗' },
   { id: 'graffiti', name: 'Graffiti', icon: '🎨' },
   { id: 'illegal-dumping', name: 'Illegal Dumping', icon: '🗑️' },
   { id: 'homeless-encampment', name: 'Homeless Encampment', icon: '🏕️' },

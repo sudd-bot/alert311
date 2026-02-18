@@ -16,7 +16,7 @@ router = APIRouter(prefix="/alerts", tags=["alerts"])
 # Map report type IDs to human-readable names
 # These match the frontend's REPORT_TYPES array
 REPORT_TYPE_NAMES = {
-    "963f1454-7c22-43be-aacb-3f34ae5d0dc7": "Parking on Sidewalk",
+    "963f1454-7c22-43be-aacb-3f34ae5d0dc7": "Blocked Driveway & Parking",
     "graffiti": "Graffiti",
     "illegal-dumping": "Illegal Dumping",
     "homeless-encampment": "Homeless Encampment",

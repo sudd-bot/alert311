@@ -3,12 +3,22 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
+const REPORT_TYPE_NAMES: Record<string, string> = {
+  '963f1454-7c22-43be-aacb-3f34ae5d0dc7': 'Blocked Driveway & Parking',
+  'graffiti': 'Graffiti',
+  'illegal-dumping': 'Illegal Dumping',
+  'homeless-encampment': 'Homeless Encampment',
+  'pothole': 'Pothole',
+  'streetlight-out': 'Streetlight Out',
+};
+
 interface Alert {
   id: number;
   address: string;
   latitude: number;
   longitude: number;
   report_type_id: string;
+  report_type_name?: string;
   active: boolean;
   created_at: string;
 }
@@ -55,7 +65,9 @@ export default function AlertList({ alerts, onClose, onAlertClick }: AlertListPr
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium">{alert.address}</div>
-                  <div className="mt-0.5 text-xs text-muted-foreground">{alert.report_type_id}</div>
+                  <div className="mt-0.5 text-xs text-muted-foreground">
+                    {alert.report_type_name || REPORT_TYPE_NAMES[alert.report_type_id] || alert.report_type_id}
+                  </div>
                 </div>
                 <span
                   className={`rounded px-2 py-1 text-xs font-medium ${
