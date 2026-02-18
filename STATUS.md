@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-17 10:00 PM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 339 Consecutive Checks!
+**Last Updated:** 2026-02-18 12:00 AM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 341 Consecutive Checks!
 
 ---
 
@@ -216,7 +216,44 @@ All set in Vercel for both projects:
 ## 📝 Daily Progress Log
 
 
+### 2026-02-18
+
+**12:00 AM - Hourly Check (All Systems Operational + Popup CTA + Code Quality)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.32s
+- ✅ **Real data integration verified** - `/reports/nearby` returning 10 live SF 311 reports ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **New feature: "Set Alert" CTA button in map popup (`page.tsx`):**
+  - **Problem:** Users who click a report marker to see its popup have no direct action from there — they'd have to close the popup, scroll down, and click "Create New Alert" in the bottom panel. The popup was informational-only with no clear next step.
+  - **Fix:** Added a "🔔 Set Alert for This Area" button at the bottom of every map popup. Clicking it closes the popup and opens the AlertPanel in one tap — a natural flow from "I see a problem here" → "I want alerts for this address".
+  - The button uses the same `handleCreateNew()` already wired in `page.tsx` — zero new logic, purely additive JSX.
+  - Button uses primary color to match the rest of the CTA style; `hover:opacity-90` transition for smooth feedback.
+- ♻️ **Code quality: Shared `formatDistance` utility (`frontend/lib/format.ts`):**
+  - `formatDistance()` was defined twice: once in `ReportsPanel.tsx` (the full implementation) and once inline in `page.tsx`'s popup JSX (duplicated the same logic).
+  - Extracted to a new `frontend/lib/format.ts` module; both `ReportsPanel.tsx` and `page.tsx` now import from there.
+  - Removes a maintenance hazard — future changes to distance formatting now only need one edit.
+- 🧹 **Cleanup: Removed stale `address` from `fetchReports` useCallback deps (`ReportsPanel.tsx`):**
+  - After the 11 PM fix (removed address param from the fetch call), `address` remained in the `useCallback` dep array even though it's no longer used inside the callback.
+  - Unnecessary deps don't cause bugs, but they can trigger spurious refetches and mislead future readers.
+  - Removed `address` from the dep array; `[lat, lng]` is the correct minimal dep set.
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `d07e9f4`, 3 files changed (+31/-16 lines), new file `frontend/lib/format.ts`
+- ✅ **Deployed** — Frontend `alert311-asm3gtzvi-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 341 consecutive operational checks! Popup CTA + code quality shipped.
+
 ### 2026-02-17
+
+**11:00 PM - Hourly Check (🚨 CRITICAL BUG FIX: ReportsPanel always returning zero results)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.11s
+- ✅ **Real data integration verified** - `/reports/nearby` returning 10 live SF 311 reports ✅
+- 🚨 **CRITICAL BUG FIXED in `ReportsPanel.tsx` — address filter causing zero results for all real users:**
+  - **Root cause:** The frontend was passing the searched address as an `address` query param to `/reports/nearby`. The backend's address filter (a strict fuzzy match designed for cron jobs) would almost never match — e.g., searching "580 California St, San Francisco, CA" would filter against "580 California St" returned by SF311, but the full address string rarely matched the abbreviated form.
+  - **Impact:** Every real user session returned the "All clear! ✅" empty state — not because there were no reports, but because the address filter silently discarded all of them. Cron checks tested without the address param, so this bug was invisible in automated monitoring.
+  - **Fix:** Removed the `address` param from the `ReportsPanel` API call. The backend already returns the geographically closest tickets (ordered by distance), which is exactly the correct UX for the map explore view. The address filter is still available in the backend for cron/alert matching, just no longer misused here.
+- ✅ **Committed and pushed** — commit `142572d`, 1 file changed (+0/-2 lines)
+- ✅ **Deployed** — Frontend `alert311-fniih09s5-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 340 consecutive operational checks! Critical user-facing bug fixed.
 
 **10:00 PM - Hourly Check (All Systems Operational + Map Popup Feature)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
