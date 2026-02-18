@@ -382,6 +382,7 @@ export default function Home() {
             onCreateNew={handleCreateNew}
             onReportsLoaded={setReportMarkers}
             onReportClick={handleReportCardClick}
+            activeReportId={popupGroup.length > 0 ? popupGroup[popupGroupIndex]?.id : (popupReport?.id ?? null)}
           />
         </>
       )}

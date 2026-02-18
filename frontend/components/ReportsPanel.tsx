@@ -12,6 +12,8 @@ interface ReportsPanelProps {
   onReportsLoaded?: (reports: Report[]) => void;
   /** Called when user clicks a report card — parent can fly map to marker + open popup */
   onReportClick?: (report: Report) => void;
+  /** ID of the report currently shown in the map popup — highlights the matching card */
+  activeReportId?: string | null;
 }
 
 export interface Report {
@@ -61,17 +63,18 @@ const ReportSkeletonDesktop = () => (
 // Map report types to icons
 const getReportIcon = (type: string): string => {
   const lowerType = type.toLowerCase();
-  if (lowerType.includes('parking')) return '🚗';
+  if (lowerType.includes('parking') || lowerType.includes('driveway')) return '🚗';
   if (lowerType.includes('graffiti')) return '🎨';
   if (lowerType.includes('dump')) return '🗑️';
+  if (lowerType.includes('homeless') || lowerType.includes('encampment')) return '🏕️';
   if (lowerType.includes('pothole')) return '🕳️';
-  if (lowerType.includes('streetlight')) return '💡';
+  if (lowerType.includes('streetlight') || lowerType.includes('light')) return '💡';
   return '📍';
 };
 
 // formatDate is now a shared utility — imported from @/lib/format
 
-export default function ReportsPanel({ address, lat, lng, onCreateNew, onReportsLoaded, onReportClick }: ReportsPanelProps) {
+export default function ReportsPanel({ address, lat, lng, onCreateNew, onReportsLoaded, onReportClick, activeReportId }: ReportsPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -179,7 +182,11 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
                       // Collapse the bottom sheet on mobile so the popup is visible
                       setIsExpanded(false);
                     }}
-                    className={`flex items-start gap-3 rounded-xl bg-gray-100/80 p-4 transition-colors ${onReportClick ? 'cursor-pointer hover:bg-gray-200/80 active:bg-gray-300/80' : ''}`}
+                    className={`flex items-start gap-3 rounded-xl p-4 transition-colors ${
+                      report.id === activeReportId
+                        ? 'bg-primary/10 ring-1 ring-primary/30'
+                        : 'bg-gray-100/80'
+                    } ${onReportClick ? 'cursor-pointer hover:bg-gray-200/80 active:bg-gray-300/80' : ''}`}
                   >
                     <div className="relative h-11 w-11 shrink-0 rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center text-xl">
                       <span aria-hidden="true">{getReportIcon(report.type)}</span>
@@ -292,7 +299,11 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
                 <div
                   key={report.id}
                   onClick={() => onReportClick?.(report)}
-                  className={`rounded-xl bg-gray-50 p-4 hover:bg-gray-100 transition-colors ${onReportClick ? 'cursor-pointer' : ''}`}
+                  className={`rounded-xl p-4 transition-colors ${
+                    report.id === activeReportId
+                      ? 'bg-primary/10 ring-1 ring-primary/30 hover:bg-primary/15'
+                      : 'bg-gray-50 hover:bg-gray-100'
+                  } ${onReportClick ? 'cursor-pointer' : ''}`}
                 >
                   <div className="flex items-start gap-3.5">
                     <div className="relative h-12 w-12 shrink-0 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-gray-100 flex items-center justify-center text-xl">
