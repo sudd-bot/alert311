@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-17 4:00 PM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 333 Consecutive Checks!
+**Last Updated:** 2026-02-17 5:00 PM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 334 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,23 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-17
+
+**5:00 PM - Hourly Check (All Systems Operational + Report Map Markers)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.19s
+- ✅ **Real data integration verified** - `/reports/nearby` returning live SF 311 reports with `distance_meters` ✅
+- ✅ **Git push** - 2 previously-unpushed docs commits (from 4 PM check) pushed to origin/main
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **New feature: Report locations shown as markers on the map:**
+  - **Problem:** The map was a mostly-empty dark canvas — only the searched-address pin was visible. The 10 SF 311 report cards in the side panel had `latitude` and `longitude` data from the API but it was never used in the UI.
+  - **Frontend `ReportsPanel.tsx`:** Added `latitude: number` and `longitude: number` to the `Report` interface; exported the interface so `page.tsx` can use it as a type; added optional `onReportsLoaded?: (reports: Report[]) => void` callback prop; called it after each successful fetch and with `[]` on error.
+  - **Frontend `page.tsx`:** Added `reportMarkers` state (`Report[]`); imported `type Report` from `ReportsPanel`; cleared markers in `handleBack()`; passed `onReportsLoaded={setReportMarkers}` to `<ReportsPanel>`; renders a `<Marker>` for each report inside the `<Map>` — amber dot for open reports, emerald dot for closed reports — positioned before the search-address marker so the primary pin is always on top.
+  - Result: Users can now see the geographic spread of 311 incidents on the map at a glance, not just as a list in the panel.
+  - Purely additive — no existing logic changed, zero breaking changes.
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `d2706d2`, 2 files changed (+29/-3 lines)
+- ✅ **Deployed** — Frontend `alert311-70vay0fwj-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 334 consecutive operational checks! Report map markers shipped.
 
 **4:00 PM - Hourly Check (All Systems Operational + Distance Feature)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
