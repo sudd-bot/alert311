@@ -31,12 +31,12 @@ const normalizePhone = (phone: string): string => {
 };
 
 const REPORT_TYPES = [
-  { id: '963f1454-7c22-43be-aacb-3f34ae5d0dc7', name: 'Blocked Driveway & Parking', icon: '🚗' },
-  { id: 'graffiti', name: 'Graffiti', icon: '🎨' },
-  { id: 'illegal-dumping', name: 'Illegal Dumping', icon: '🗑️' },
-  { id: 'homeless-encampment', name: 'Homeless Encampment', icon: '🏕️' },
-  { id: 'pothole', name: 'Pothole', icon: '🕳️' },
-  { id: 'streetlight-out', name: 'Streetlight Out', icon: '💡' },
+  { id: '963f1454-7c22-43be-aacb-3f34ae5d0dc7', name: 'Blocked Driveway & Parking', icon: '🚗', comingSoon: false },
+  { id: 'graffiti', name: 'Graffiti', icon: '🎨', comingSoon: true },
+  { id: 'illegal-dumping', name: 'Illegal Dumping', icon: '🗑️', comingSoon: true },
+  { id: 'homeless-encampment', name: 'Homeless Encampment', icon: '🏕️', comingSoon: true },
+  { id: 'pothole', name: 'Pothole', icon: '🕳️', comingSoon: true },
+  { id: 'streetlight-out', name: 'Streetlight Out', icon: '💡', comingSoon: true },
 ];
 
 export default function AlertPanel({
@@ -380,15 +380,23 @@ export default function AlertPanel({
                       {REPORT_TYPES.map((type) => (
                         <button
                           key={type.id}
-                          onClick={() => setSelectedReportType(type.id)}
-                          className={`flex items-center gap-2.5 p-3 rounded-xl text-left transition-all ${
-                            selectedReportType === type.id
+                          onClick={() => !type.comingSoon && setSelectedReportType(type.id)}
+                          disabled={type.comingSoon}
+                          className={`relative flex items-center gap-2.5 p-3 rounded-xl text-left transition-all ${
+                            type.comingSoon
+                              ? 'bg-gray-50 cursor-not-allowed opacity-60'
+                              : selectedReportType === type.id
                               ? 'bg-primary/10 ring-2 ring-primary'
                               : 'bg-gray-100 hover:bg-gray-200'
                           }`}
                         >
-                          <span className="text-lg">{type.icon}</span>
-                          <span className="text-sm font-medium text-gray-900">{type.name}</span>
+                          <span className={`text-lg ${type.comingSoon ? 'grayscale' : ''}`}>{type.icon}</span>
+                          <span className="text-sm font-medium text-gray-900 leading-tight">{type.name}</span>
+                          {type.comingSoon && (
+                            <span className="absolute top-1.5 right-1.5 text-[9px] font-bold uppercase tracking-wide text-gray-400 bg-gray-200 rounded px-1 py-0.5 leading-none">
+                              Soon
+                            </span>
+                          )}
                         </button>
                       ))}
                     </div>
