@@ -1,7 +1,6 @@
 import { defineConfig, globalIgnores } from "eslint/config";
-// Note: explicit .js extension required for ESM import resolution in newer Node versions
-import nextVitals from "eslint-config-next/core-web-vitals.js";
-import nextTs from "eslint-config-next/typescript.js";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
