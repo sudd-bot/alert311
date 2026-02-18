@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from pydantic import BaseModel
 import json
+import math
 import urllib.request
 import urllib.error
 import ssl
@@ -20,6 +21,16 @@ from ..services.token_manager import TokenManager
 router = APIRouter(prefix="/reports", tags=["reports"])
 
 
+def _haversine_meters(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """Calculate great-circle distance between two points in meters (Haversine formula)."""
+    R = 6_371_000  # Earth radius in meters
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlam = math.radians(lng2 - lng1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlam / 2) ** 2
+    return 2 * R * math.asin(math.sqrt(a))
+
+
 class SF311Report(BaseModel):
     id: str
     public_id: Optional[str] = None
@@ -31,6 +42,7 @@ class SF311Report(BaseModel):
     latitude: float
     longitude: float
     photo_url: Optional[str] = None
+    distance_meters: Optional[float] = None  # Great-circle distance from the query point
 
 
 @router.get("/nearby", response_model=List[SF311Report])
@@ -172,6 +184,9 @@ async def get_nearby_reports(
             photo_url = raw_photo_url.split("#")[0] if raw_photo_url else None
             
             location = ticket.get("location", {})
+            ticket_lat = location.get("latitude", lat)
+            ticket_lng = location.get("longitude", lng)
+            distance_m = _haversine_meters(lat, lng, ticket_lat, ticket_lng)
             
             reports.append({
                 "report": SF311Report(
@@ -182,9 +197,10 @@ async def get_nearby_reports(
                     raw_date=date_str or None,  # ISO 8601 string for client-side relative-time formatting
                     status=status,
                     address=location.get("address", "Unknown"),
-                    latitude=location.get("latitude", lat),
-                    longitude=location.get("longitude", lng),
-                    photo_url=photo_url
+                    latitude=ticket_lat,
+                    longitude=ticket_lng,
+                    photo_url=photo_url,
+                    distance_meters=round(distance_m, 1)
                 ),
                 "date_obj": date_obj  # Keep datetime object for sorting
             })

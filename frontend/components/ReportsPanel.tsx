@@ -18,6 +18,7 @@ interface Report {
   status: 'open' | 'closed';
   address: string;
   photo_url?: string | null;
+  distance_meters?: number | null;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -85,6 +86,15 @@ const formatDate = (dateStr: string, rawDate?: string | null): string => {
   } catch {
     return dateStr;
   }
+};
+
+// Format distance for display (meters → human-readable)
+const formatDistance = (meters?: number | null): string => {
+  if (meters == null) return '';
+  if (meters < 100) return `${Math.round(meters)}m away`;
+  const miles = meters / 1609.34;
+  if (miles < 0.1) return `${Math.round(meters)}m away`;
+  return `${miles.toFixed(1)}mi away`;
 };
 
 export default function ReportsPanel({ address, lat, lng, onCreateNew }: ReportsPanelProps) {
@@ -217,9 +227,14 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                         </span>
                       </div>
                       <p className="text-xs text-gray-600 line-clamp-1">{report.address}</p>
-                      {report.public_id && (
-                        <p className="text-[10px] text-gray-400 mt-0.5">Case #{report.public_id}</p>
-                      )}
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {report.public_id && (
+                          <p className="text-[10px] text-gray-400">Case #{report.public_id}</p>
+                        )}
+                        {report.distance_meters != null && (
+                          <p className="text-[10px] text-gray-400">{formatDistance(report.distance_meters)}</p>
+                        )}
+                      </div>
                     </div>
                     <span className="shrink-0 text-[10px] text-gray-400 font-medium mt-0.5">{formatDate(report.date, report.raw_date)}</span>
                   </div>
@@ -329,6 +344,9 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
                         </span>
                         {report.public_id && (
                           <span className="text-xs text-gray-400">Case #{report.public_id}</span>
+                        )}
+                        {report.distance_meters != null && (
+                          <span className="text-xs text-gray-400">{formatDistance(report.distance_meters)}</span>
                         )}
                       </div>
                     </div>
