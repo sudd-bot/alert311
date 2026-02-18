@@ -10,6 +10,8 @@ interface ReportsPanelProps {
   onCreateNew: () => void;
   /** Called with full report list once loaded (used to render map markers) */
   onReportsLoaded?: (reports: Report[]) => void;
+  /** Called when user clicks a report card — parent can fly map to marker + open popup */
+  onReportClick?: (report: Report) => void;
 }
 
 export interface Report {
@@ -69,7 +71,7 @@ const getReportIcon = (type: string): string => {
 
 // formatDate is now a shared utility — imported from @/lib/format
 
-export default function ReportsPanel({ address, lat, lng, onCreateNew, onReportsLoaded }: ReportsPanelProps) {
+export default function ReportsPanel({ address, lat, lng, onCreateNew, onReportsLoaded, onReportClick }: ReportsPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -172,13 +174,18 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
                 (isExpanded ? reports : reports.slice(0, 4)).map((report) => (
                   <div
                     key={report.id}
-                    className="flex items-start gap-3 rounded-xl bg-gray-100/80 p-4"
+                    onClick={() => {
+                      onReportClick?.(report);
+                      // Collapse the bottom sheet on mobile so the popup is visible
+                      setIsExpanded(false);
+                    }}
+                    className={`flex items-start gap-3 rounded-xl bg-gray-100/80 p-4 transition-colors ${onReportClick ? 'cursor-pointer hover:bg-gray-200/80 active:bg-gray-300/80' : ''}`}
                   >
                     <div className="relative h-11 w-11 shrink-0 rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center text-xl">
                       <span aria-hidden="true">{getReportIcon(report.type)}</span>
                       {report.photo_url && (
                         <img
-                          src={report.photo_url.split('#')[0]}
+                          src={report.photo_url}
                           alt={report.type}
                           className="absolute inset-0 h-full w-full object-cover"
                           onError={(e) => { e.currentTarget.style.display = 'none'; }}
@@ -284,14 +291,15 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
               reports.map((report) => (
                 <div
                   key={report.id}
-                  className="rounded-xl bg-gray-50 p-4 hover:bg-gray-100 transition-colors"
+                  onClick={() => onReportClick?.(report)}
+                  className={`rounded-xl bg-gray-50 p-4 hover:bg-gray-100 transition-colors ${onReportClick ? 'cursor-pointer' : ''}`}
                 >
                   <div className="flex items-start gap-3.5">
                     <div className="relative h-12 w-12 shrink-0 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-gray-100 flex items-center justify-center text-xl">
                       <span aria-hidden="true">{getReportIcon(report.type)}</span>
                       {report.photo_url && (
                         <img
-                          src={report.photo_url.split('#')[0]}
+                          src={report.photo_url}
                           alt={report.type}
                           className="absolute inset-0 h-full w-full object-cover"
                           onError={(e) => { e.currentTarget.style.display = 'none'; }}

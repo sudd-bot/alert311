@@ -72,6 +72,21 @@ export default function Home() {
     setShowAlertPanel(true);
   };
 
+  // Called when user clicks a report card in the panel.
+  // Finds the cluster that contains the clicked report, opens its popup, and flies to it.
+  const handleReportCardClick = useCallback((report: Report) => {
+    const cluster = groupedMarkers.find((group) => group.some((r) => r.id === report.id)) ?? [report];
+    const idx = cluster.findIndex((r) => r.id === report.id);
+    setPopupReport(cluster[0]);
+    setPopupGroup(cluster);
+    setPopupGroupIndex(Math.max(idx, 0));
+    mapRef.current?.flyTo({
+      center: [report.longitude, report.latitude],
+      zoom: 17,
+      duration: 800,
+    });
+  }, [groupedMarkers]);
+
   const handleBack = () => {
     setSelectedLocation(null);
     setHasSearched(false);
@@ -366,6 +381,7 @@ export default function Home() {
             lng={selectedLocation.lng}
             onCreateNew={handleCreateNew}
             onReportsLoaded={setReportMarkers}
+            onReportClick={handleReportCardClick}
           />
         </>
       )}
