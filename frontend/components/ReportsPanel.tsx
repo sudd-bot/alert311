@@ -111,12 +111,10 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
     setIsLoading(true);
     setHasError(false);
     try {
-      const streetAddress = address.split(',')[0].trim();
       const params = new URLSearchParams({
         lat: lat.toString(),
         lng: lng.toString(),
         limit: '10',
-        address: streetAddress
       });
       
       const response = await fetch(`${API_URL}/reports/nearby?${params.toString()}`);
