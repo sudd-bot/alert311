@@ -5,7 +5,7 @@ import Map, { Marker, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import AddressSearch from '@/components/AddressSearch';
 import AlertPanel from '@/components/AlertPanel';
-import ReportsPanel from '@/components/ReportsPanel';
+import ReportsPanel, { type Report } from '@/components/ReportsPanel';
 import MapControls from '@/components/MapControls';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
@@ -29,6 +29,7 @@ export default function Home() {
 
   const [showAlertPanel, setShowAlertPanel] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [reportMarkers, setReportMarkers] = useState<Report[]>([]);
 
   const handleLocationSelect = useCallback(
     (address: string, lat: number, lng: number) => {
@@ -55,6 +56,7 @@ export default function Home() {
   const handleBack = () => {
     setSelectedLocation(null);
     setHasSearched(false);
+    setReportMarkers([]);
     mapRef.current?.flyTo({
       center: [SF_CENTER.lng, SF_CENTER.lat],
       zoom: 12,
@@ -108,6 +110,23 @@ export default function Home() {
           ]}
           attributionControl={false}
         >
+          {/* Report markers — amber (open) or emerald (closed) dots */}
+          {reportMarkers.map((report) => (
+            <Marker
+              key={report.id}
+              longitude={report.longitude}
+              latitude={report.latitude}
+              anchor="center"
+            >
+              <div
+                className={`h-3 w-3 rounded-full border-2 border-white shadow-md ${
+                  report.status === 'open' ? 'bg-amber-400' : 'bg-emerald-400'
+                }`}
+                title={`${report.type} — ${report.address}`}
+              />
+            </Marker>
+          ))}
+
           {selectedLocation && (
             <Marker
               longitude={selectedLocation.lng}
@@ -203,6 +222,7 @@ export default function Home() {
             lat={selectedLocation.lat}
             lng={selectedLocation.lng}
             onCreateNew={handleCreateNew}
+            onReportsLoaded={setReportMarkers}
           />
         </>
       )}

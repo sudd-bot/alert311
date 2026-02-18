@@ -7,9 +7,11 @@ interface ReportsPanelProps {
   lat: number;
   lng: number;
   onCreateNew: () => void;
+  /** Called with full report list once loaded (used to render map markers) */
+  onReportsLoaded?: (reports: Report[]) => void;
 }
 
-interface Report {
+export interface Report {
   id: string;
   public_id?: string | null;
   type: string;
@@ -17,6 +19,8 @@ interface Report {
   raw_date?: string | null;
   status: 'open' | 'closed';
   address: string;
+  latitude: number;
+  longitude: number;
   photo_url?: string | null;
   distance_meters?: number | null;
 }
@@ -97,7 +101,7 @@ const formatDistance = (meters?: number | null): string => {
   return `${miles.toFixed(1)}mi away`;
 };
 
-export default function ReportsPanel({ address, lat, lng, onCreateNew }: ReportsPanelProps) {
+export default function ReportsPanel({ address, lat, lng, onCreateNew, onReportsLoaded }: ReportsPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -123,10 +127,12 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew }: Reports
       
       const data = await response.json();
       setReports(data);
+      onReportsLoaded?.(data);
     } catch (error) {
       console.error('Error fetching reports:', error);
       setHasError(true);
       setReports([]);
+      onReportsLoaded?.([]);
     } finally {
       setIsLoading(false);
     }
