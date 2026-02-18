@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 9:00 AM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 350 Consecutive Checks!
+**Last Updated:** 2026-02-18 10:00 AM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 351 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,24 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**10:00 AM - Hourly Check (All Systems Operational + Panel Auto-Scroll to Active Card)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.22s
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **New UX feature: report panel auto-scrolls to highlight active card on popup navigation:**
+  - **Problem:** The bidirectional map↔panel link was one step short. When a user clicks a clustered marker and uses **← Prev / Next →** to page through reports in the popup, the corresponding card in the side/bottom panel highlights correctly (blue tint + ring, added Feb 18 7 AM) — but if that card is off-screen in the panel (e.g., card #8 of 10 on desktop, or a card below the fold on mobile), the user had to manually scroll the panel to see which card was highlighted. No visual feedback in the scrollable list for off-screen active cards.
+  - **Fix:** Added `cardRefs` (`useRef<Record<string, HTMLDivElement | null>>({})`) to `ReportsPanel`. Each report card div now registers itself via a ref callback: `ref={(el) => { if (el) cardRefs.current[report.id] = el; else delete cardRefs.current[report.id]; }}`. Applied to both mobile and desktop card lists.
+  - A new `useEffect` watches `activeReportId`. When it changes, it calls `cardRefs.current[activeReportId]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })`.
+  - `block: 'nearest'` is key — a fully-visible card causes zero scroll (no jump), while a partially-visible or off-screen card smoothly scrolls just enough to bring it into view.
+  - **Desktop:** Works for all 10 cards in the scrollable side panel — the most impactful case, since the panel can have 10 cards and the active one could be anywhere.
+  - **Mobile collapsed:** Works for the 4 visible cards; cards #5-10 are hidden until the user expands the sheet (no auto-expand — expanding the sheet when the user is focused on a map popup would be disruptive UX).
+  - `useRef` doesn't cause re-renders — refs are updated as a DOM side effect with no React state involved. Zero performance impact.
+  - `cardRefs` is shared between mobile and desktop renders — both lists register into the same map. Since only one layout is visible at a time (CSS `lg:hidden` / `hidden lg:block`), only one set of DOM nodes is live, so the correct element always wins.
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `2b96fcd`, 1 file changed (+30/-1 lines)
+- ✅ **Deployed** — Frontend `alert311-7y3xhhoi0-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 351 consecutive operational checks! Panel auto-scroll to active card shipped.
 
 **9:00 AM - Hourly Check (All Systems Operational + Duplicate Alert Detection)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
