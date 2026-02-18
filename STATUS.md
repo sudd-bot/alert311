@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 1:00 PM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 354 Consecutive Checks!
+**Last Updated:** 2026-02-18 2:00 PM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 355 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,22 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**2:00 PM - Hourly Check (All Systems Operational + Alert Badge Timing Fix + Dead Code Removal)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.21s
+- ✅ **Git status clean** - Working tree clean before changes
+- 🐛 **Bug fixed: "Alert active" badge delayed when user clicks Done in success state (`AlertPanel.tsx` + `page.tsx`):**
+  - **Root cause:** `AlertPanel.createAlert()` called `setStep('success')` then `setTimeout(() => onAlertCreated(alertData), 2500)` — the parent's `handleAlertCreated` (which sets `hasAlert = true`) wasn't called until 2.5 seconds later. If the user clicked "Done" before the timer fired, the panel closed and the badge appeared 2.5 seconds after close, looking like a random page refresh. Users who waited for auto-close also saw the badge pop in at the exact moment the panel was closing, rather than when the alert was confirmed.
+  - **Fix:** `createAlert()` now calls `onAlertCreated(alertData)` immediately before `setStep('success')`. The `setTimeout` was changed to call `onClose()` (auto-dismiss after success animation). `handleAlertCreated` in `page.tsx` now only sets `hasAlert = true` — panel closure is handled by `AlertPanel` itself via `onClose()`.
+  - **Result:** The "🔔 Alert active" badge appears in the header the instant success is confirmed, before the success animation even starts. Both the Done button and auto-close timer correctly call `onClose()` for dismissal.
+- 🧹 **Dead code removal: deleted `components/AlertList.tsx`** (80 lines):
+  - This was a legacy component from an early design iteration using shadcn Card/Button. It was never imported in the current `page.tsx` (which uses the full-screen map + panel architecture). The component would have shown a small floating card of alerts in the corner — completely outside the current design system (white card vs. glass dark theme). It was also functionally incomplete (`onAlertClick` had no real handler in any caller).
+  - Removed to reduce confusion for future development and eliminate unused bundle weight.
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `f6c5738`, 3 files changed (+7/-92 lines, net -85 lines)
+- ✅ **Deployed** — Frontend `alert311-6pxpy3mi5-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 355 consecutive operational checks! Alert badge timing fixed + dead code removed.
 
 **1:00 PM - Hourly Check (All Systems Operational + Stale Dropdown Bug Fix + Alert Active Badge)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
