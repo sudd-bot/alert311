@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 1:00 AM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 342 Consecutive Checks!
+**Last Updated:** 2026-02-18 2:00 AM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 343 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,27 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**2:00 AM - Hourly Check (All Systems Operational + Phone Persistence + Backend Cleanup)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.15s
+- ✅ **Real data integration verified** - `/reports/nearby` returning live SF 311 reports ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **New UX improvement: phone number persisted in `localStorage` (`AlertPanel.tsx`):**
+  - **Problem:** Returning users who open the alert panel have to retype their phone number every visit, even though the backend already knows they're verified (`already_verified: true` path). At best, it's a minor annoyance; at worst it causes friction that discourages creating a second alert.
+  - **Fix:** `AlertPanel` now reads `alert311_phone` from `localStorage` on mount and pre-fills the phone input. The key is written after two events: (1) successful `verifyCode()` response (new user just verified), and (2) `sendVerification()` returning `already_verified: true` (returning user).
+  - The user still has to click "Continue" — no steps are skipped, just the typing. The server still validates the phone on submit.
+  - All `localStorage` access is wrapped in `try/catch` to silently handle private browsing mode or restrictive browser policies.
+  - Combined with the existing `already_verified` server flow: returning users open the panel → phone pre-filled → tap Continue → jumps straight to "Create" step. Two taps total instead of type + tap + wait.
+- ♻️ **Backend code quality: `_normalize_addr()` hoisted to module level (`reports.py`):**
+  - Previously defined inside `get_nearby_reports()` → Python re-created the function object on every API request (every call to `/reports/nearby`). With ~343 hourly cron check + user traffic, this accumulates.
+  - Moved to module level (above the router definition) so it's compiled once at import time. The function body is identical — zero behavior change.
+  - As a module-level helper it's now accessible to any future route in `reports.py` that needs address normalization (e.g., a potential `GET /reports/near-alert` endpoint for cron matching).
+- ✅ **Python syntax verified** - `py_compile` passes on `reports.py`
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `db5bd46`, 2 files changed (+43/-25 lines)
+- ✅ **Deployed** — Backend `backend-8e9err4kr-...` + Frontend `alert311-273i6odmw-...` live ✅
+- 🎉 **MILESTONE:** 343 consecutive operational checks! Phone persistence + backend cleanup shipped.
 
 **1:00 AM - Hourly Check (All Systems Operational + Shared formatDate + Date in Popup)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
