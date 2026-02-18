@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 2:00 PM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 355 Consecutive Checks!
+**Last Updated:** 2026-02-18 3:00 PM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 356 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,27 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**3:00 PM - Hourly Check (All Systems Operational + Escape-to-Close + Refresh Button + Alert-Aware CTA + Proper Typing)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.19s
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **New UX: Escape key closes AlertPanel (`AlertPanel.tsx`):**
+  - **Problem:** Desktop users opening the Create Alert modal had no keyboard shortcut to close it — only mouse click on the backdrop or the × button. Standard modal UX (React Modal, Headless UI, Radix, etc.) all support Escape as a close trigger.
+  - **Fix:** Added `useEffect` that registers a `keydown` listener on `window` when the panel is open. `e.key === 'Escape'` calls `onClose()`. Effect disabled during the `'success'` step to prevent accidentally skipping the confirmation screen if the user hits Escape reflexively.
+  - `return () => window.removeEventListener(...)` cleanup prevents listener leaks on unmount.
+- 🔄 **New UX: Refresh button in ReportsPanel header (`ReportsPanel.tsx`):**
+  - **Problem:** Once the reports list loaded, there was no way to refresh it without navigating "Back" to the search screen and re-entering the same address. If a new 311 report was filed while the user had the map open, they'd see stale data indefinitely.
+  - **Fix:** Added a circular-arrow icon button (↺) right-aligned in the "Nearby Reports" header on both mobile and desktop. Clicking it calls `fetchReports()` — already exposed in the component, just not previously wired to a UI trigger. The button spins while loading (`animate-spin` class mirrors the existing loading pattern) and is disabled during an in-flight fetch. No extra toast — skeleton cards provide sufficient feedback.
+- ✨ **Better UX: Alert-aware CTA label in ReportsPanel (`ReportsPanel.tsx` + `page.tsx`):**
+  - **Problem:** After creating an alert, the bottom panel still showed "Create New Alert" as the CTA. Users who saw the "🔔 Alert active" badge in the header bar and then looked at the panel got no consistent signal — the panel button still said "New" as if nothing had happened. For a returning user creating their second alert at a different address: the label was technically correct, but ambiguous.
+  - **Fix:** Added `hasAlert?: boolean` prop to `ReportsPanel`. When `true`, the CTA label changes to "Create Another Alert" — explicitly communicating "you already have one, this would be a second." `page.tsx` passes `hasAlert={hasAlert}` to the panel. Same button, same `onCreateNew` handler — just a contextual label change.
+- 🏷️ **TypeScript: `AlertCreatedData` interface exported from `AlertPanel.tsx`:**
+  - `onAlertCreated` was typed as `(alert: any) => void` — a type-safety hole. Defined `AlertCreatedData` interface (`id`, `address`, `report_type_id`, `active`, optional `latitude`/`longitude`) and exported it. `page.tsx` now imports and uses the type for `handleAlertCreated(_alert: AlertCreatedData)`. The param is prefixed `_` (intentionally unused — available for future features like alert list display, ID tracking, etc.).
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `3986f1d`, 3 files changed (+90/-22 lines)
+- ✅ **Deployed** — Frontend `alert311-i1esglo91-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 356 consecutive operational checks! Escape-to-close + refresh button + alert-aware CTA + AlertCreatedData type shipped.
 
 **2:00 PM - Hourly Check (All Systems Operational + Alert Badge Timing Fix + Dead Code Removal)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
