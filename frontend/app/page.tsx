@@ -31,7 +31,11 @@ export default function Home() {
   const [showAlertPanel, setShowAlertPanel] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [reportMarkers, setReportMarkers] = useState<Report[]>([]);
+  // popupReport: the primary (first) report in the clicked cluster.
+  // popupGroup: the full set of reports at that lat/lng — drives multi-report popup UI.
   const [popupReport, setPopupReport] = useState<Report | null>(null);
+  const [popupGroup, setPopupGroup] = useState<Report[]>([]);
+  const [popupGroupIndex, setPopupGroupIndex] = useState(0);
 
   // Group markers that share the exact same lat/lng (e.g. intersection reports).
   // Shows a count badge on clustered markers so stacked dots are visible.
@@ -73,6 +77,8 @@ export default function Home() {
     setHasSearched(false);
     setReportMarkers([]);
     setPopupReport(null);
+    setPopupGroup([]);
+    setPopupGroupIndex(0);
     mapRef.current?.flyTo({
       center: [SF_CENTER.lng, SF_CENTER.lat],
       zoom: 12,
@@ -139,6 +145,8 @@ export default function Home() {
                 onClick={(e) => {
                   e.originalEvent.stopPropagation();
                   setPopupReport(primary);
+                  setPopupGroup(group);
+                  setPopupGroupIndex(0);
                 }}
               >
                 <div className="relative cursor-pointer hover:scale-125 transition-transform">
@@ -158,70 +166,109 @@ export default function Home() {
             );
           })}
 
-          {/* Popup for clicked report marker */}
-          {popupReport && (
-            <Popup
-              longitude={popupReport.longitude}
-              latitude={popupReport.latitude}
-              anchor="bottom"
-              offset={12}
-              closeButton={false}
-              onClose={() => setPopupReport(null)}
-              style={{ padding: 0 }}
-            >
-              <div className="bg-white rounded-xl shadow-xl ring-1 ring-black/10 overflow-hidden min-w-[200px] max-w-[240px]">
-                {popupReport.photo_url && (
-                  <img
-                    src={popupReport.photo_url}
-                    alt={popupReport.type}
-                    className="w-full h-28 object-cover"
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                  />
-                )}
-                <div className="p-3">
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <p className="text-sm font-semibold text-gray-900 leading-tight">{popupReport.type}</p>
+          {/* Popup for clicked report marker.
+              - Single report: standard detail card.
+              - Cluster (multiple reports at same lat/lng): header shows "N reports" + pagination
+                arrows so users can browse all reports at that location, not just the primary one. */}
+          {popupReport && (() => {
+            const activeReport = popupGroup.length > 1 ? popupGroup[popupGroupIndex] : popupReport;
+            const isCluster = popupGroup.length > 1;
+            const closePopup = () => {
+              setPopupReport(null);
+              setPopupGroup([]);
+              setPopupGroupIndex(0);
+            };
+            return (
+              <Popup
+                longitude={popupReport.longitude}
+                latitude={popupReport.latitude}
+                anchor="bottom"
+                offset={12}
+                closeButton={false}
+                onClose={closePopup}
+                style={{ padding: 0 }}
+              >
+                <div className="bg-white rounded-xl shadow-xl ring-1 ring-black/10 overflow-hidden min-w-[200px] max-w-[240px]">
+                  {activeReport.photo_url && (
+                    <img
+                      src={activeReport.photo_url}
+                      alt={activeReport.type}
+                      className="w-full h-28 object-cover"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  )}
+                  <div className="p-3">
+                    {/* Header: type + close button; cluster indicator when multiple */}
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 leading-tight">{activeReport.type}</p>
+                        {isCluster && (
+                          <p className="text-[10px] text-primary font-medium mt-0.5">
+                            {popupGroupIndex + 1} of {popupGroup.length} at this location
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={closePopup}
+                        className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors -mt-0.5"
+                        aria-label="Close popup"
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 line-clamp-1">{formatAddress(activeReport.address)}</p>
+                    <p className="text-[10px] text-gray-400 mb-2">{formatDate(activeReport.date, activeReport.raw_date)}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                        activeReport.status === 'open'
+                          ? 'bg-amber-100 text-amber-700'
+                          : 'bg-emerald-100 text-emerald-700'
+                      }`}>
+                        {activeReport.status}
+                      </span>
+                      {activeReport.distance_meters != null && (
+                        <span className="text-[10px] text-gray-400">{formatDistance(activeReport.distance_meters)}</span>
+                      )}
+                      {activeReport.public_id && (
+                        <span className="text-[10px] text-gray-400">#{activeReport.public_id}</span>
+                      )}
+                    </div>
+                    {/* Prev/Next navigation for clustered markers */}
+                    {isCluster && (
+                      <div className="flex items-center justify-between gap-2 mt-2.5">
+                        <button
+                          onClick={() => setPopupGroupIndex((i) => Math.max(i - 1, 0))}
+                          disabled={popupGroupIndex === 0}
+                          className="flex-1 rounded-lg border border-gray-200 py-1 text-xs font-medium text-gray-600 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+                        >
+                          ← Prev
+                        </button>
+                        <button
+                          onClick={() => setPopupGroupIndex((i) => Math.min(i + 1, popupGroup.length - 1))}
+                          disabled={popupGroupIndex === popupGroup.length - 1}
+                          className="flex-1 rounded-lg border border-gray-200 py-1 text-xs font-medium text-gray-600 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+                        >
+                          Next →
+                        </button>
+                      </div>
+                    )}
+                    {/* CTA: let users jump straight from a report popup to creating an alert */}
                     <button
-                      onClick={() => setPopupReport(null)}
-                      className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors -mt-0.5"
-                      aria-label="Close popup"
+                      onClick={() => {
+                        closePopup();
+                        handleCreateNew();
+                      }}
+                      className="mt-2.5 w-full rounded-lg bg-primary py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
                     >
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
+                      🔔 Set Alert for This Area
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 line-clamp-1">{formatAddress(popupReport.address)}</p>
-                  <p className="text-[10px] text-gray-400 mb-2">{formatDate(popupReport.date, popupReport.raw_date)}</p>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-                      popupReport.status === 'open'
-                        ? 'bg-amber-100 text-amber-700'
-                        : 'bg-emerald-100 text-emerald-700'
-                    }`}>
-                      {popupReport.status}
-                    </span>
-                    {popupReport.distance_meters != null && (
-                      <span className="text-[10px] text-gray-400">{formatDistance(popupReport.distance_meters)}</span>
-                    )}
-                    {popupReport.public_id && (
-                      <span className="text-[10px] text-gray-400">#{popupReport.public_id}</span>
-                    )}
-                  </div>
-                  {/* CTA: let users jump straight from a report popup to creating an alert */}
-                  <button
-                    onClick={() => {
-                      setPopupReport(null);
-                      handleCreateNew();
-                    }}
-                    className="mt-2.5 w-full rounded-lg bg-primary py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
-                  >
-                    🔔 Set Alert for This Area
-                  </button>
                 </div>
-              </div>
-            </Popup>
-          )}
+              </Popup>
+            );
+          })()}
 
           {selectedLocation && (
             <Marker

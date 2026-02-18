@@ -1,9 +1,9 @@
 """
 Report viewing routes.
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import Annotated, List, Optional
 from pydantic import BaseModel
 import json
 import math
@@ -79,7 +79,7 @@ class SF311Report(BaseModel):
 async def get_nearby_reports(
     lat: float,
     lng: float,
-    limit: int = 10,
+    limit: Annotated[int, Query(ge=1, le=50)] = 10,
     address: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
