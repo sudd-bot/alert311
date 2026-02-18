@@ -195,10 +195,12 @@ export default function AlertPanel({
 
       if (response.ok) {
         const alertData = await response.json();
+        // Signal parent immediately so the "Alert active" badge appears the moment
+        // success is shown — not after the 2.5s auto-close timer fires.
+        onAlertCreated(alertData);
         setStep('success');
-        setTimeout(() => {
-          onAlertCreated(alertData);
-        }, 2500);
+        // Auto-dismiss after showing the success animation; Done button still works for early exit.
+        setTimeout(() => onClose(), 2500);
       } else {
         const data = await response.json().catch(() => ({}));
         addToast('error', data.detail || 'Failed to create alert');

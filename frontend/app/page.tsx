@@ -67,7 +67,8 @@ export default function Home() {
   );
 
   const handleAlertCreated = useCallback(() => {
-    setShowAlertPanel(false);
+    // Alert was created — set the badge. Panel handles its own close
+    // (via setTimeout → onClose after the success animation, or Done button).
     setHasAlert(true);
   }, []);
 
