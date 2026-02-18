@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 2:00 AM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 343 Consecutive Checks!
+**Last Updated:** 2026-02-18 3:00 AM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 344 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,27 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**3:00 AM - Hourly Check (All Systems Operational + Distance Sort + Intersection Addresses)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.16s
+- ✅ **Real data integration verified** - `/reports/nearby` returning live SF 311 reports with correct distance-first order ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- ♻️ **Backend: sort reports by distance (closest first) in `/reports/nearby`:**
+  - **Problem:** Reports were sorted by date (newest first). For a map-based explore view, a report filed today 400m away would rank above one filed yesterday that's 90m away — but the nearby one is far more relevant to the user's searched address.
+  - **Fix:** Changed sort key to `(distance_meters, -timestamp)` — closest first, with recency as tiebreaker for equidistant tickets. Verified live: querying near 37.7876, -122.4005 now returns 110 Minna St (87.5m) first, before Clementina St (376m), even though Clementina's date is newer.
+  - `_EPOCH` constant retained (still used as tiebreaker fallback when `date_obj` is None).
+- ✨ **Frontend: `formatAddress()` for cleaner intersection display:**
+  - SF311 returns some addresses as `"Intersection Annie St, Stevenson St"` — a raw API format that's awkward to read in a UI card or popup.
+  - Added `formatAddress(addr: string): string` to `frontend/lib/format.ts` — regex catches `^Intersection X, Y$` and converts to `"X & Y"` (e.g., `"Annie St & Stevenson St"`). Normal addresses pass through unchanged.
+  - Applied in 3 places: mobile report card (`ReportsPanel.tsx`), desktop report card (`ReportsPanel.tsx`), marker title attr + popup address (`page.tsx`).
+  - `formatAddress` is now exported from `@/lib/format` alongside `formatDistance` and `formatDate` — single import for all shared formatters.
+- ✅ **Python syntax verified** - `py_compile` passes on `reports.py`
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `f8e7698`, 4 files changed (+27/-9 lines)
+- ✅ **Deployed** — Backend `backend-gfb8ugbzu-...` + Frontend `alert311-bwf8h6euy-...` live ✅
+- 📝 **Note:** Vercel build shows ESLint warning (`eslint-config-next/core-web-vitals` module path) — non-blocking, build succeeds. Also `@next/swc` version mismatch warning (15.5.7 vs 15.5.11). Both are dependency version drift, not code issues. Worth addressing in a future `npm update` pass.
+- 🎉 **MILESTONE:** 344 consecutive operational checks! Distance-first sort + intersection address formatting shipped.
 
 **2:00 AM - Hourly Check (All Systems Operational + Phone Persistence + Backend Cleanup)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
