@@ -13,6 +13,7 @@ from ..models import Alert, Report
 from ..schemas import SuccessResponse
 from ..services.sf311 import sf311_client
 from ..services.sms_alert import sms_alert_service
+from ..services.address_utils import addresses_match
 
 logger = logging.getLogger(__name__)
 
@@ -78,12 +79,16 @@ async def poll_311_reports(
                 scope="recently_opened",
             )
             
-            # Filter reports to exact address match
+            # Filter reports to address match.
+            # Uses fuzzy normalization (abbreviations + substring) so that
+            # "580 California St" matches "580 California St, San Francisco, CA"
+            # and "61 Chattanooga Street" matches "61 Chattanooga St".
+            # Previously used exact case-insensitive match which would NEVER fire
+            # because geocoded alert addresses include city/state suffix that SF311 omits.
             for report_data in reports:
                 report_address = report_data.get("address", "").strip()
                 
-                # Exact address match (case-insensitive)
-                if report_address.lower() != alert.address.lower():
+                if not addresses_match(report_address, alert.address):
                     continue
                 
                 report_id = report_data.get("id")

@@ -17,38 +17,14 @@ from ..core.database import get_db
 from ..models import User, Report, Alert
 from ..schemas import ReportResponse
 from ..services.token_manager import TokenManager
+from ..services.address_utils import normalize_addr, addresses_match
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
 
-def _normalize_addr(a: str) -> str:
-    """
-    Normalize street-type abbreviations for address fuzzy matching.
-    Covers 13 common street types, applied symmetrically to both query and ticket address.
-    Defined at module level so it's compiled once at import time (not per-request).
-    """
-    a = a.lower().strip()
-    # Remove punctuation
-    a = a.replace(".", "").replace(",", "")
-    # Full → abbreviated (longer strings first to avoid partial matches)
-    replacements = [
-        (" boulevard", " blvd"),
-        (" terrace", " ter"),
-        (" avenue", " ave"),
-        (" street", " st"),
-        (" drive", " dr"),
-        (" court", " ct"),
-        (" place", " pl"),
-        (" lane", " ln"),
-        (" road", " rd"),
-        (" circle", " cir"),
-        (" highway", " hwy"),
-        (" parkway", " pkwy"),
-        (" square", " sq"),
-    ]
-    for full, abbr in replacements:
-        a = a.replace(full, abbr)
-    return a
+# _normalize_addr kept as a local alias for backward-compat within this file.
+# All new code should import normalize_addr / addresses_match from address_utils.
+_normalize_addr = normalize_addr
 
 
 def _haversine_meters(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
