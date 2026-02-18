@@ -54,6 +54,16 @@ export default function AlertPanel({
   const [resendCooldown, setResendCooldown] = useState(0);
   const { addToast } = useToast();
 
+  // Pre-fill phone from localStorage so returning users don't have to retype it
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('alert311_phone');
+      if (saved) setUserPhone(saved);
+    } catch {
+      // localStorage unavailable (private browsing, permissions) — silently skip
+    }
+  }, []);
+
   // Countdown timer for resend cooldown — starts when entering verify step
   useEffect(() => {
     if (step === 'verify') {
@@ -87,6 +97,7 @@ export default function AlertPanel({
         const data = await response.json().catch(() => ({}));
         if (data.already_verified) {
           // Returning user — already verified, skip to alert creation
+          try { localStorage.setItem('alert311_phone', phone); } catch { /* ignore */ }
           setStep('create');
           addToast('success', 'Welcome back!');
         } else {
@@ -116,6 +127,8 @@ export default function AlertPanel({
       });
 
       if (response.ok) {
+        // Phone verified — persist to localStorage so future visits can skip re-entry
+        try { localStorage.setItem('alert311_phone', userPhone); } catch { /* ignore */ }
         setStep('create');
         addToast('success', 'Phone verified!');
       } else {
