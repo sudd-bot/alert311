@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-17 9:00 PM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 338 Consecutive Checks!
+**Last Updated:** 2026-02-17 10:00 PM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 339 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,31 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-17
+
+**10:00 PM - Hourly Check (All Systems Operational + Map Popup Feature)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.22s
+- ✅ **Real data integration verified** - `/reports/nearby` returning 10 live SF 311 reports ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **New feature: clickable report markers with map popup in `page.tsx`:**
+  - **Problem:** The amber/emerald report dots on the map were purely decorative — they had a browser `title` tooltip (invisible on mobile) but no real interactivity. Users had no way to get more info about a marker without finding the corresponding card in the side/bottom panel.
+  - **Fix:** Report markers now respond to click. Clicking a marker opens a `react-map-gl` `Popup` component anchored just above the dot, containing:
+    - Report photo (if available, full-width 112px tall)
+    - Report type name (bold headline)
+    - Address (truncated, 1 line)
+    - Status badge (amber "open" / emerald "closed")
+    - Distance from searched address (if available)
+    - Case number (if available)
+    - A close (×) button; popup also closes via map click-away
+  - Markers now show `cursor-pointer` and a `hover:scale-125` scale transition to signal interactivity
+  - `popupReport` state resets to null when user presses "Back to search"
+  - Uses `Popup` from `react-map-gl/mapbox` — already a dependency, zero new packages added
+  - `e.originalEvent.stopPropagation()` prevents marker clicks from bubbling to map (avoids unintended map interactions)
+  - Purely additive — no existing logic changed, TypeScript zero errors
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `2240638`, 1 file changed (+67/-3 lines)
+- ✅ **Deployed** — Frontend `alert311-d2sgv0xil-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 339 consecutive operational checks! Clickable map markers with popup shipped.
 
 **9:00 PM - Hourly Check (All Systems Operational + UX Honesty Fix)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
