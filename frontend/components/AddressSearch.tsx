@@ -8,7 +8,10 @@ interface AddressSearchProps {
 }
 
 export default function AddressSearch({ onLocationSelect }: AddressSearchProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(() => {
+    // Pre-fill with last search so users don't retype after hitting "Back"
+    try { return sessionStorage.getItem('alert311_last_query') ?? ''; } catch { return ''; }
+  });
   const [results, setResults] = useState<any[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -95,6 +98,10 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
         const address = await reverseGeocode(latitude, longitude);
         setIsLocating(false);
         addToast('success', 'Location found!');
+        // Pre-fill the query with the short street name for "Back" returns
+        const shortName = address.split(',')[0];
+        setQuery(shortName);
+        try { sessionStorage.setItem('alert311_last_query', shortName); } catch { /* ignore */ }
         onLocationSelect(address, latitude, longitude);
       },
       (error) => {
@@ -149,6 +156,8 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
     
     setQuery(feature.text);
     setShowResults(false);
+    // Persist so the input is pre-filled if the user hits "Back" and returns to this screen
+    try { sessionStorage.setItem('alert311_last_query', feature.text); } catch { /* ignore */ }
     onLocationSelect(address, lat, lng);
   };
 
