@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { formatDistance, formatDate, formatAddress } from '@/lib/format';
 
 interface ReportsPanelProps {
@@ -79,6 +79,8 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  /** Refs to each rendered report card — keyed by report.id. Used to scroll the active card into view. */
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const fetchReports = useCallback(async () => {
     setIsLoading(true);
@@ -112,6 +114,25 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
   useEffect(() => {
     fetchReports();
   }, [fetchReports]);
+
+  /**
+   * Scroll the active report card into view whenever the selection changes.
+   * Triggers when the user navigates Prev/Next in a cluster popup, clicks a
+   * map marker, or uses the card-to-map click flow (card → marker → popup →
+   * Prev/Next → panel highlight should follow).
+   *
+   * Uses 'nearest' so a fully-visible card doesn't scroll at all (no jumpiness),
+   * but a partially-hidden or off-screen card smoothly scrolls into view.
+   * Desktop: always works (all cards rendered, panel is scrollable).
+   * Mobile collapsed: only scrolls if the card is in the first 4 (visible slice).
+   */
+  useEffect(() => {
+    if (!activeReportId) return;
+    const el = cardRefs.current[activeReportId];
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [activeReportId]);
 
   return (
     <>
@@ -177,6 +198,10 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
                 (isExpanded ? reports : reports.slice(0, 4)).map((report) => (
                   <div
                     key={report.id}
+                    ref={(el) => {
+                      if (el) cardRefs.current[report.id] = el;
+                      else delete cardRefs.current[report.id];
+                    }}
                     role={onReportClick ? 'button' : undefined}
                     tabIndex={onReportClick ? 0 : undefined}
                     aria-label={onReportClick ? `View ${report.type} at ${report.address} on map` : undefined}
@@ -308,6 +333,10 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
               reports.map((report) => (
                 <div
                   key={report.id}
+                  ref={(el) => {
+                    if (el) cardRefs.current[report.id] = el;
+                    else delete cardRefs.current[report.id];
+                  }}
                   role={onReportClick ? 'button' : undefined}
                   tabIndex={onReportClick ? 0 : undefined}
                   aria-label={onReportClick ? `View ${report.type} at ${report.address} on map` : undefined}
