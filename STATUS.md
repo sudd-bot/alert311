@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 3:00 AM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 344 Consecutive Checks!
+**Last Updated:** 2026-02-18 4:00 AM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 345 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,29 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**4:00 AM - Hourly Check (All Systems Operational + Marker Clustering + Date Fix + Dead Code)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.10s
+- ✅ **Real data integration verified** - `/reports/nearby` returning live SF 311 reports with distance sort ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- 🧹 **Backend dead code removal (`reports.py`):**
+  - `_EPOCH = datetime.min.replace(tzinfo=timezone.utc)` was defined inside `get_nearby_reports()` but never used — the distance-first sort added at 3 AM uses `-(x["date_obj"].timestamp() if x["date_obj"] else 0)` directly. Removed the variable and the now-unused `timezone` import.
+  - Zero behavior change; purely a hygiene fix.
+- ✨ **Frontend `format.ts`: consistent date formatting for dates > 30 days:**
+  - Previous: `date.toLocaleDateString()` — locale-dependent (gives `"2/9/2026"` in en-US, `"09.02.2026"` in de-DE, etc.)
+  - New: `"Feb 9"` (current year) or `"Feb 9, 2025"` (past year) using `en-US` month short names — consistent for all users regardless of browser locale
+  - Affects the report card date label for tickets filed more than 30 days ago
+- ✨ **Frontend `page.tsx`: map marker clustering for same-location reports:**
+  - **Problem:** Multiple SF311 reports at the exact same lat/lng (e.g. 3+ tickets at "Annie St & Stevenson St") all rendered as separate overlapping dots. Only the topmost dot was clickable; the others were completely invisible underneath. Users couldn't tell there were multiple reports at that intersection.
+  - **Fix:** `useMemo` groups `reportMarkers` by lat/lng rounded to 6 decimal places. One `<Marker>` is rendered per unique location. If `count > 1`, a small gray count badge (showing the number) appears in the top-right corner of the dot — standard map cluster UX.
+  - Clicking a clustered marker opens the popup for the primary (first) report in the group — the one that was already sorted closest/most-recent by the backend.
+  - **Bonus fix:** Renamed `Map` import to `MapboxMap` throughout — was shadowing the global JavaScript `Map` constructor, causing TS7009/TS2558 type errors when writing `new Map<string, Report[]>()`. TypeScript now correctly resolves both identifiers.
+- ✅ **Python syntax verified** - `py_compile` passes on `reports.py`
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `7d1e74d`, 3 files changed (+54/-27 lines)
+- ✅ **Deployed** — Backend `backend-8ah8dq471-...` + Frontend `alert311-o9ylpkzx8-...` live ✅
+- 🎉 **MILESTONE:** 345 consecutive operational checks! Marker clustering + date consistency + dead code removal shipped.
 
 **3:00 AM - Hourly Check (All Systems Operational + Distance Sort + Intersection Addresses)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
