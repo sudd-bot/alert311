@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useMemo } from 'react';
 import MapboxMap, { Marker, Popup, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import AddressSearch from '@/components/AddressSearch';
-import AlertPanel from '@/components/AlertPanel';
+import AlertPanel, { type AlertCreatedData } from '@/components/AlertPanel';
 import ReportsPanel, { type Report } from '@/components/ReportsPanel';
 import MapControls from '@/components/MapControls';
 import { formatDistance, formatDate, formatAddress } from '@/lib/format';
@@ -66,9 +66,11 @@ export default function Home() {
     []
   );
 
-  const handleAlertCreated = useCallback(() => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleAlertCreated = useCallback((_alert: AlertCreatedData) => {
     // Alert was created — set the badge. Panel handles its own close
     // (via setTimeout → onClose after the success animation, or Done button).
+    // _alert data available here for future use (e.g. alert ID tracking, list display).
     setHasAlert(true);
   }, []);
 
@@ -396,6 +398,7 @@ export default function Home() {
             onReportsLoaded={setReportMarkers}
             onReportClick={handleReportCardClick}
             activeReportId={popupGroup.length > 0 ? popupGroup[popupGroupIndex]?.id : (popupReport?.id ?? null)}
+            hasAlert={hasAlert}
           />
         </>
       )}

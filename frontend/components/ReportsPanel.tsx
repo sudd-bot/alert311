@@ -14,6 +14,8 @@ interface ReportsPanelProps {
   onReportClick?: (report: Report) => void;
   /** ID of the report currently shown in the map popup — highlights the matching card */
   activeReportId?: string | null;
+  /** True when the user already has an active alert for this location — changes CTA label */
+  hasAlert?: boolean;
 }
 
 export interface Report {
@@ -74,7 +76,7 @@ const getReportIcon = (type: string): string => {
 
 // formatDate is now a shared utility — imported from @/lib/format
 
-export default function ReportsPanel({ address, lat, lng, onCreateNew, onReportsLoaded, onReportClick, activeReportId }: ReportsPanelProps) {
+export default function ReportsPanel({ address, lat, lng, onCreateNew, onReportsLoaded, onReportClick, activeReportId, hasAlert }: ReportsPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -155,14 +157,34 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
           <div className={`px-5 pb-5 overflow-y-auto scrollbar-hide ${isExpanded ? 'max-h-[calc(80vh-60px)]' : 'max-h-[220px]'}`}>
             {/* Header - Better spacing */}
             <div className="mb-5">
-              <h2 className="font-display text-xl font-bold text-gray-900 flex items-center gap-2">
-                Nearby Reports
-                {!isLoading && reports.length > 0 && (
-                  <span className="text-xs font-bold text-primary bg-primary/10 rounded-full px-2 py-0.5">
-                    {reports.length}
-                  </span>
-                )}
-              </h2>
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="font-display text-xl font-bold text-gray-900 flex items-center gap-2">
+                  Nearby Reports
+                  {!isLoading && reports.length > 0 && (
+                    <span className="text-xs font-bold text-primary bg-primary/10 rounded-full px-2 py-0.5">
+                      {reports.length}
+                    </span>
+                  )}
+                </h2>
+                {/* Refresh button — re-fetches latest 311 reports without navigating back */}
+                <button
+                  onClick={fetchReports}
+                  disabled={isLoading}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-200 hover:text-gray-600 disabled:opacity-40 transition-colors"
+                  aria-label="Refresh reports"
+                  title="Refresh"
+                >
+                  <svg
+                    className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
+              </div>
               <p className="text-sm text-gray-500 truncate mt-1">
                 {address}
               </p>
@@ -284,7 +306,7 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
               onClick={onCreateNew}
               className="mt-5 w-full h-14 rounded-xl bg-primary font-display font-semibold text-base text-primary-foreground shadow-lg shadow-primary/25 active:scale-[0.98] transition-transform"
             >
-              Create New Alert
+              {hasAlert ? 'Create Another Alert' : 'Create New Alert'}
             </button>
           </div>
         </div>
@@ -295,14 +317,34 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
         <div className="glass-light h-full rounded-2xl overflow-hidden flex flex-col ring-1 ring-black/5 shadow-xl">
           {/* Header - More padding */}
           <div className="p-6 border-b border-gray-100">
-            <h2 className="font-display text-xl font-bold text-gray-900 flex items-center gap-2">
-              Nearby Reports
-              {!isLoading && reports.length > 0 && (
-                <span className="text-xs font-bold text-primary bg-primary/10 rounded-full px-2 py-0.5">
-                  {reports.length}
-                </span>
-              )}
-            </h2>
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="font-display text-xl font-bold text-gray-900 flex items-center gap-2">
+                Nearby Reports
+                {!isLoading && reports.length > 0 && (
+                  <span className="text-xs font-bold text-primary bg-primary/10 rounded-full px-2 py-0.5">
+                    {reports.length}
+                  </span>
+                )}
+              </h2>
+              {/* Refresh button — re-fetches latest 311 reports */}
+              <button
+                onClick={fetchReports}
+                disabled={isLoading}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-40 transition-colors"
+                aria-label="Refresh reports"
+                title="Refresh"
+              >
+                <svg
+                  className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+            </div>
             <p className="text-sm text-gray-500 truncate mt-1.5">
               {address}
             </p>
@@ -413,7 +455,7 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
               onClick={onCreateNew}
               className="w-full h-14 rounded-xl bg-primary font-display font-semibold text-base text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98] transition-all"
             >
-              Create New Alert
+              {hasAlert ? 'Create Another Alert' : 'Create New Alert'}
             </button>
           </div>
         </div>

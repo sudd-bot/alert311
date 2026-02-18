@@ -3,12 +3,22 @@
 import { useState, useEffect } from 'react';
 import { useToast } from './Toast';
 
+/** Shape of the alert object returned by POST /alerts on success. */
+export interface AlertCreatedData {
+  id: number;
+  address: string;
+  report_type_id: string;
+  active: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
 interface AlertPanelProps {
   address: string;
   lat: number;
   lng: number;
   onClose: () => void;
-  onAlertCreated: (alert: any) => void;
+  onAlertCreated: (alert: AlertCreatedData) => void;
 }
 
 /**
@@ -97,6 +107,19 @@ export default function AlertPanel({
     })();
     return () => { cancelled = true; };
   }, [step, userPhone, selectedReportType, address]);
+
+  /**
+   * Close the panel when Escape is pressed — standard modal dismiss UX for desktop.
+   * Disabled during the success state (user shouldn't accidentally skip the confirmation).
+   */
+  useEffect(() => {
+    if (step === 'success') return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose, step]);
 
   // Countdown timer for resend cooldown — starts when entering verify step
   useEffect(() => {
