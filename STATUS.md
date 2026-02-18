@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-17 6:00 PM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 335 Consecutive Checks!
+**Last Updated:** 2026-02-17 7:00 PM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 336 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,25 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-17
+
+**7:00 PM - Hourly Check (All Systems Operational + Bug Fix)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.11s
+- ✅ **Real data integration verified** - `/reports/nearby` returning live SF 311 reports ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- 🐛 **Bug fixed in `AlertPanel.tsx` — resend cooldown interval never ticking after `resendCode()`:**
+  - The "Resend code" button starts a 30-second countdown to prevent spam, but after tapping it a second time the display would freeze at "Resend in 30s" and never count down
+  - Root cause: `resendCode()` calls `sendVerification()`, which calls `setStep('verify')`. Since `step` is already `'verify'`, React bails out (no state change), so the `useEffect([step])` that manages the countdown interval is **never re-triggered**. The `setResendCooldown(30)` call updates the displayed number to 30, but there's no interval running to decrement it.
+  - Fix: `resendCode()` now inline-starts its own `setInterval` after calling `sendVerification()` (mirroring the logic in `useEffect`). The interval self-cancels when it reaches 0, so there's no memory leak.
+  - The initial cooldown on first entering 'verify' still comes from `useEffect([step])` (no change there). This fix only affects the second-resend path.
+- ✨ **Minor UX polish in `page.tsx` — slightly larger report map markers:**
+  - Report markers were `h-3 w-3` (12×12px) — very small, especially for mobile tap targets
+  - Changed to `h-3.5 w-3.5` (14×14px) — 16% larger, still small/unobtrusive but easier to see
+  - Added `cursor-default` to make clear they're informational, not clickable (consistent with the `title` tooltip)
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `c5e0566`, 2 files changed (+12/-3 lines)
+- ✅ **Deployed** — Frontend `alert311-a2e1x7i35-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 336 consecutive operational checks! Resend cooldown bug fixed.
 
 **6:00 PM - Hourly Check (All Systems Operational + Label Fix + UI Polish)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
