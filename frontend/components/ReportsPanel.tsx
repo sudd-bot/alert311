@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { formatDistance } from '@/lib/format';
+import { formatDistance, formatDate } from '@/lib/format';
 
 interface ReportsPanelProps {
   address: string;
@@ -67,31 +67,7 @@ const getReportIcon = (type: string): string => {
   return '📍';
 };
 
-// Format date for display — prefers ISO raw_date for accurate relative time
-const formatDate = (dateStr: string, rawDate?: string | null): string => {
-  try {
-    // Use raw ISO date for reliable parsing when available
-    const parseable = rawDate || dateStr;
-    const date = new Date(parseable);
-    if (isNaN(date.getTime())) return dateStr;
-
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    return date.toLocaleDateString();
-  } catch {
-    return dateStr;
-  }
-};
+// formatDate is now a shared utility — imported from @/lib/format
 
 export default function ReportsPanel({ address, lat, lng, onCreateNew, onReportsLoaded }: ReportsPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
