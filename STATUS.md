@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 12:00 AM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 341 Consecutive Checks!
+**Last Updated:** 2026-02-18 1:00 AM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 342 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,25 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**1:00 AM - Hourly Check (All Systems Operational + Shared formatDate + Date in Popup)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.21s
+- ✅ **Real data integration verified** - `/reports/nearby` returning live SF 311 reports ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- ♻️ **Code quality: Extracted `formatDate` to shared `frontend/lib/format.ts`:**
+  - `formatDate()` was defined only inside `ReportsPanel.tsx` as a private component-level function — invisible to other components
+  - Extracted to `frontend/lib/format.ts` alongside `formatDistance` (same pattern used at midnight for `formatDistance`)
+  - `ReportsPanel.tsx` now imports `{ formatDistance, formatDate }` from `@/lib/format`; local definition removed
+  - This makes the date-formatting logic reusable and centralised (one file to update if format changes)
+- ✨ **New feature: report date shown in map popup (`page.tsx`):**
+  - **Problem:** The map popup showed type, address, status badge, distance, and case # — but no date. Users couldn't tell from the popup alone whether an incident was a few hours old or weeks old, which affects the decision to set an alert.
+  - **Fix:** `page.tsx` now imports `formatDate` from `@/lib/format` and uses it to show relative time (e.g., `"3h ago"`, `"2 weeks ago"`, `"Yesterday"`) below the address line in each popup. The date is rendered as small `text-[10px] text-gray-400` text to stay visually light and not compete with the type/address/status info.
+  - No layout changes to other popup elements — purely additive single line.
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `3bd29cf`, 3 files changed (+37/-28 lines)
+- ✅ **Deployed** — Frontend `alert311-eyjzviy8o-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 342 consecutive operational checks! formatDate extracted + popup date shipped.
 
 **12:00 AM - Hourly Check (All Systems Operational + Popup CTA + Code Quality)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
