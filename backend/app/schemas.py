@@ -53,7 +53,11 @@ class UserResponse(BaseModel):
 class AlertCreate(BaseModel):
     address: str = Field(..., min_length=5, description="Street address in San Francisco")
     report_type_id: Optional[str] = Field(None, description="311 ticket type ID (defaults to parking on sidewalk)")
-    
+    # Optional pre-computed coordinates from the frontend (map geocoder).
+    # When provided, the backend skips the geocoding API call — faster and cheaper.
+    latitude: Optional[float] = Field(None, description="Latitude from frontend geocoder (skip re-geocoding if provided)")
+    longitude: Optional[float] = Field(None, description="Longitude from frontend geocoder (skip re-geocoding if provided)")
+
     @field_validator('address')
     @classmethod
     def validate_address(cls, v: str) -> str:

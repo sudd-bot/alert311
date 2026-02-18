@@ -43,12 +43,15 @@ async def create_alert(
     if not user.verified:
         raise HTTPException(status_code=403, detail="Phone number not verified")
     
-    # Geocode the address
-    coords = geocoding_service.geocode(alert_data.address)
-    if not coords:
-        raise HTTPException(status_code=400, detail="Unable to geocode address")
-    
-    latitude, longitude = coords
+    # Use pre-computed coordinates from the frontend if provided (skips a geocoding API call).
+    # Fall back to geocoding if coords are missing or clearly invalid (lat/lng = 0).
+    if alert_data.latitude and alert_data.longitude:
+        latitude, longitude = alert_data.latitude, alert_data.longitude
+    else:
+        coords = geocoding_service.geocode(alert_data.address)
+        if not coords:
+            raise HTTPException(status_code=400, detail="Unable to geocode address")
+        latitude, longitude = coords
     
     # Use default report type if not specified
     report_type_id = alert_data.report_type_id or settings.DEFAULT_REPORT_TYPE_ID
