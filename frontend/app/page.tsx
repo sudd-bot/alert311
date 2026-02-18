@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import Map, { Marker, MapRef } from 'react-map-gl/mapbox';
+import Map, { Marker, Popup, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import AddressSearch from '@/components/AddressSearch';
 import AlertPanel from '@/components/AlertPanel';
@@ -30,6 +30,7 @@ export default function Home() {
   const [showAlertPanel, setShowAlertPanel] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [reportMarkers, setReportMarkers] = useState<Report[]>([]);
+  const [popupReport, setPopupReport] = useState<Report | null>(null);
 
   const handleLocationSelect = useCallback(
     (address: string, lat: number, lng: number) => {
@@ -57,6 +58,7 @@ export default function Home() {
     setSelectedLocation(null);
     setHasSearched(false);
     setReportMarkers([]);
+    setPopupReport(null);
     mapRef.current?.flyTo({
       center: [SF_CENTER.lng, SF_CENTER.lat],
       zoom: 12,
@@ -110,22 +112,84 @@ export default function Home() {
           ]}
           attributionControl={false}
         >
-          {/* Report markers — amber (open) or emerald (closed) dots */}
+          {/* Report markers — amber (open) or emerald (closed) dots; clickable for popup */}
           {reportMarkers.map((report) => (
             <Marker
               key={report.id}
               longitude={report.longitude}
               latitude={report.latitude}
               anchor="center"
+              onClick={(e) => {
+                e.originalEvent.stopPropagation();
+                setPopupReport(report);
+              }}
             >
               <div
-                className={`h-3.5 w-3.5 rounded-full border-2 border-white shadow-md cursor-default ${
+                className={`h-3.5 w-3.5 rounded-full border-2 border-white shadow-md cursor-pointer hover:scale-125 transition-transform ${
                   report.status === 'open' ? 'bg-amber-400' : 'bg-emerald-400'
                 }`}
                 title={`${report.type} — ${report.address}`}
               />
             </Marker>
           ))}
+
+          {/* Popup for clicked report marker */}
+          {popupReport && (
+            <Popup
+              longitude={popupReport.longitude}
+              latitude={popupReport.latitude}
+              anchor="bottom"
+              offset={12}
+              closeButton={false}
+              onClose={() => setPopupReport(null)}
+              style={{ padding: 0 }}
+            >
+              <div className="bg-white rounded-xl shadow-xl ring-1 ring-black/10 overflow-hidden min-w-[200px] max-w-[240px]">
+                {popupReport.photo_url && (
+                  <img
+                    src={popupReport.photo_url}
+                    alt={popupReport.type}
+                    className="w-full h-28 object-cover"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                )}
+                <div className="p-3">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <p className="text-sm font-semibold text-gray-900 leading-tight">{popupReport.type}</p>
+                    <button
+                      onClick={() => setPopupReport(null)}
+                      className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors -mt-0.5"
+                      aria-label="Close popup"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-2 line-clamp-1">{popupReport.address}</p>
+                  <div className="flex items-center gap-2">
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                      popupReport.status === 'open'
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-emerald-100 text-emerald-700'
+                    }`}>
+                      {popupReport.status}
+                    </span>
+                    {popupReport.distance_meters != null && (
+                      <span className="text-[10px] text-gray-400">
+                        {popupReport.distance_meters < 100
+                          ? `${Math.round(popupReport.distance_meters)}m away`
+                          : `${(popupReport.distance_meters / 1609.34).toFixed(1)}mi away`}
+                      </span>
+                    )}
+                    {popupReport.public_id && (
+                      <span className="text-[10px] text-gray-400">#{popupReport.public_id}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </Popup>
+          )}
 
           {selectedLocation && (
             <Marker
