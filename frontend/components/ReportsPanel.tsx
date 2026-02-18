@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { formatDistance } from '@/lib/format';
 
 interface ReportsPanelProps {
   address: string;
@@ -92,15 +93,6 @@ const formatDate = (dateStr: string, rawDate?: string | null): string => {
   }
 };
 
-// Format distance for display (meters → human-readable)
-const formatDistance = (meters?: number | null): string => {
-  if (meters == null) return '';
-  if (meters < 100) return `${Math.round(meters)}m away`;
-  const miles = meters / 1609.34;
-  if (miles < 0.1) return `${Math.round(meters)}m away`;
-  return `${miles.toFixed(1)}mi away`;
-};
-
 export default function ReportsPanel({ address, lat, lng, onCreateNew, onReportsLoaded }: ReportsPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
@@ -134,7 +126,7 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
     } finally {
       setIsLoading(false);
     }
-  }, [lat, lng, address]);
+  }, [lat, lng]);
 
   useEffect(() => {
     fetchReports();

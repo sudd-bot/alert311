@@ -7,6 +7,7 @@ import AddressSearch from '@/components/AddressSearch';
 import AlertPanel from '@/components/AlertPanel';
 import ReportsPanel, { type Report } from '@/components/ReportsPanel';
 import MapControls from '@/components/MapControls';
+import { formatDistance } from '@/lib/format';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 const SF_CENTER = { lat: 37.7749, lng: -122.4194 };
@@ -167,7 +168,7 @@ export default function Home() {
                     </button>
                   </div>
                   <p className="text-xs text-gray-500 mb-2 line-clamp-1">{popupReport.address}</p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
                       popupReport.status === 'open'
                         ? 'bg-amber-100 text-amber-700'
@@ -176,16 +177,22 @@ export default function Home() {
                       {popupReport.status}
                     </span>
                     {popupReport.distance_meters != null && (
-                      <span className="text-[10px] text-gray-400">
-                        {popupReport.distance_meters < 100
-                          ? `${Math.round(popupReport.distance_meters)}m away`
-                          : `${(popupReport.distance_meters / 1609.34).toFixed(1)}mi away`}
-                      </span>
+                      <span className="text-[10px] text-gray-400">{formatDistance(popupReport.distance_meters)}</span>
                     )}
                     {popupReport.public_id && (
                       <span className="text-[10px] text-gray-400">#{popupReport.public_id}</span>
                     )}
                   </div>
+                  {/* CTA: let users jump straight from a report popup to creating an alert */}
+                  <button
+                    onClick={() => {
+                      setPopupReport(null);
+                      handleCreateNew();
+                    }}
+                    className="mt-2.5 w-full rounded-lg bg-primary py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
+                  >
+                    🔔 Set Alert for This Area
+                  </button>
                 </div>
               </div>
             </Popup>
