@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 12:00 PM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 353 Consecutive Checks!
+**Last Updated:** 2026-02-18 1:00 PM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 354 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,24 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**1:00 PM - Hourly Check (All Systems Operational + Stale Dropdown Bug Fix + Alert Active Badge)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.10s
+- ✅ **Real data API verified** - `/reports/nearby` returning live SF 311 reports
+- ✅ **Git status clean** - Working tree clean before changes
+- 🐛 **Bug fixed: stale autocomplete dropdown stays open when search input is cleared (`AddressSearch.tsx`):**
+  - **Root cause:** The `useEffect` that drives autocomplete searches has an `if (query)` guard — when `query` becomes empty (user backspaces to clear the field), the guard prevents calling `searchAddress()`, which is the only place `setResults([])` and `setShowResults(false)` are called. Result: the old suggestions dropdown stayed visible even after the input was completely cleared. Users could accidentally click a stale result.
+  - **Fix:** Added an `else` branch: when `query` is empty, immediately clear `results` and hide the dropdown (`setResults([]); setShowResults(false)`). The 300ms debounce timer still runs, so this happens with the same slight delay — no jank, just the stale dropdown disappears cleanly.
+- ✨ **New UX: "🔔 Alert active" badge in address header after alert creation (`page.tsx`):**
+  - **Problem:** After successfully creating an alert, `AlertPanel` shows a success animation and then closes. The user is returned to the map view with no indication that anything changed — the address header bar looks exactly the same as before. Users had no way to confirm "is my alert actually watching this address?" without reopening the panel.
+  - **Fix:** Added `hasAlert` boolean state to `page.tsx`. `handleAlertCreated()` now sets `hasAlert(true)` in addition to closing the panel. `handleBack()` resets it to `false`.
+  - When `hasAlert` is true, the address header pill shows a compact `"🔔 Alert active"` badge — `bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/30` — right-aligned inside the existing header bar, with a `title` tooltip for accessibility. Uses `shrink-0` so it never gets truncated by long address names.
+  - This provides persistent confirmation that the alert was created and is watching the current location. Clears on "Back" so the next address starts fresh.
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `d918892`, 2 files changed (+20/-1 lines)
+- ✅ **Deployed** — Frontend `alert311-a37wqwaoe-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 354 consecutive operational checks! Stale dropdown bug fixed + alert active badge shipped.
 
 **12:00 PM - Hourly Check (All Systems Operational + Empty State CTA + Success Done Button)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
