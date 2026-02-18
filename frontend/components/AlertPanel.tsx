@@ -266,6 +266,13 @@ export default function AlertPanel({
               </svg>
               <span>SMS alerts will be sent to {userPhone}</span>
             </div>
+            {/* Manual dismiss — don't make users wait for the 2.5s auto-close */}
+            <button
+              onClick={onClose}
+              className="mt-6 w-full h-12 rounded-xl bg-gray-100 text-sm font-semibold text-gray-700 hover:bg-gray-200 active:scale-[0.98] transition-all"
+            >
+              Done
+            </button>
           </div>
         ) : (
           <>

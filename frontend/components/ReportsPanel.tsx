@@ -193,6 +193,12 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
                   <div className="text-3xl mb-2" aria-hidden="true">✅</div>
                   <p className="font-semibold text-gray-700 text-sm">All clear!</p>
                   <p className="text-gray-500 text-xs mt-1">No recent 311 reports near this address.</p>
+                  <button
+                    onClick={onCreateNew}
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
+                  >
+                    🔔 Get alerted if that changes
+                  </button>
                 </div>
               ) : (
                 (isExpanded ? reports : reports.slice(0, 4)).map((report) => (
@@ -328,6 +334,12 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
                 <div className="text-4xl mb-3" aria-hidden="true">✅</div>
                 <p className="font-semibold text-gray-700">All clear!</p>
                 <p className="text-sm text-gray-500 mt-1">No recent 311 reports near this address.</p>
+                <button
+                  onClick={onCreateNew}
+                  className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
+                >
+                  🔔 Get alerted if that changes
+                </button>
               </div>
             ) : (
               reports.map((report) => (
