@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 5:00 AM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 346 Consecutive Checks!
+**Last Updated:** 2026-02-18 6:00 AM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 347 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,27 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**6:00 AM - Hourly Check (All Systems Operational + Card-to-Map Click + Cleanup)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.09s
+- ✅ **Real data integration verified** - `/reports/nearby` returning live SF 311 reports sorted by distance ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **New UX feature: report cards now clickable to highlight map marker + open popup:**
+  - **Problem:** The report list panel and the map were completely disconnected — clicking a card in the panel did nothing on the map. Users had to mentally match a card to a dot on the map with no help from the UI. This is especially confusing when there are 10 reports scattered around the map.
+  - **Fix:** `ReportsPanel` gained an `onReportClick?: (report: Report) => void` prop. Clicking any card on mobile or desktop fires this callback and on mobile automatically collapses the bottom sheet (so the popup is immediately visible without the sheet obscuring it).
+  - `page.tsx`'s `handleReportCardClick` finds the cluster containing the clicked report in `groupedMarkers`, sets the full popup state (including the correct `popupGroupIndex` for paginated clusters), and calls `mapRef.current?.flyTo()` to smoothly fly the map to that marker at zoom 17.
+  - Result: tap a card → map flies to the marker → popup opens showing that exact report (or the cluster it belongs to, with pagination pre-set to that report's position). Standard map+list UX (Google Maps, Yelp, etc.).
+  - Desktop cards: `cursor-pointer` re-added (was explicitly removed Feb 17 8 AM when cards had no click handler; now they do).
+  - Mobile cards: `cursor-pointer hover:bg-gray-200/80 active:bg-gray-300/80` added for visual tap feedback.
+  - Purely additive — no existing logic changed.
+- 🧹 **Cleanup: removed redundant `split('#')[0]` from photo URLs in ReportsPanel:**
+  - The backend has stripped Cloudinary `#spot=...` fragments from photo URLs since Feb 17 9 AM. The two `report.photo_url.split('#')[0]` calls in `ReportsPanel.tsx` (mobile + desktop cards) became harmless no-ops but added visual noise to the code.
+  - Simplified to `src={report.photo_url}` — cleaner, semantically correct.
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `03bb25d`, 2 files changed (+29/-5 lines)
+- ✅ **Deployed** — Frontend `alert311-6a2sf6pxl-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 347 consecutive operational checks! Card-to-map click feature shipped.
 
 **5:00 AM - Hourly Check (All Systems Operational + Cluster Popup Pagination + Backend Limit Validation)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
