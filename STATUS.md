@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 10:00 AM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 351 Consecutive Checks!
+**Last Updated:** 2026-02-18 11:00 AM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 352 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,33 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**11:00 AM - Hourly Check (All Systems Operational + 3 Bug Fixes + 3 Improvements)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.18s
+- ✅ **Git status clean** - Working tree clean before changes
+- 🚨 **CRITICAL BUG FIXED: `cron.py` address matching — alerts would never fire even after A2P approval:**
+  - **Root cause:** `poll_311_reports()` used exact case-insensitive match: `report_address.lower() != alert.address.lower()`. This would NEVER match because alert addresses are geocoded full-form ("580 California St, San Francisco, CA 94104") while SF311 returns short-form ("580 California St"). Every comparison would fail and no new reports would ever be stored — meaning no SMS alerts would ever send.
+  - **Fix:** Extracted `_normalize_addr()` from `reports.py` into a new shared module `backend/app/services/address_utils.py`, along with a new `addresses_match()` helper that does fuzzy substring matching after normalization (same algorithm used in the `/reports/nearby` address filter). `cron.py` now imports and uses `addresses_match()`.
+  - `reports.py` updated to import `normalize_addr` from the shared module; local `_normalize_addr = normalize_addr` alias kept for backward compat.
+  - This bug was invisible in automated checks because health checks test `/reports/nearby` without address filtering — the cron path was never exercised by monitoring.
+  - **Impact:** When Twilio A2P campaign is approved, SMS alerts will now actually fire correctly.
+- ⚡ **Backend perf: skip geocoding in `create_alert` when frontend provides coords:**
+  - The frontend already has exact Mapbox coordinates when the user searches an address and hits "Create Alert". It was sending `latitude`/`longitude` in the request body, but `AlertCreate` schema didn't declare them — Pydantic silently dropped them and the backend always re-geocoded.
+  - Added `latitude: Optional[float]` and `longitude: Optional[float]` to `AlertCreate`. `create_alert()` now uses frontend coords directly when provided, only falling back to `geocoding_service.geocode()` when missing.
+  - Saves one geocoding API call per alert creation (~100–200ms latency improvement).
+- ✨ **Frontend UX: remember last search query in `sessionStorage`:**
+  - After hitting "Back" on the results view, the search screen reset with an empty input — users had to retype their full address to refine the search or re-enter the same area. This was the most common case (checking one more nearby address).
+  - `AddressSearch` now uses a `useState` lazy initializer to read `alert311_last_query` from `sessionStorage` on mount. Set in `handleSelect` (address autocomplete pick) and `handleUseLocation` (GPS reverse-geocode result).
+  - `sessionStorage` (not `localStorage`) — clears when the tab closes, so future sessions start fresh. All access wrapped in `try/catch` for private browsing safety.
+- 🔧 **Build warnings resolved: `@next/swc` version mismatch:**
+  - `@next/swc` was at 15.5.7 while Next.js was 15.5.11 — warning appeared on every Vercel build. Ran `npm update next` → bumped both Next.js and all `@next/swc-*` platform packages to 15.5.12 in `package-lock.json`. Build is now warning-free on this front.
+  - (ESLint `core-web-vitals` module path warning unchanged — the `.js` extension fix caused a different break; left as-is since it's non-blocking and the build succeeds cleanly)
+- ✅ **Python syntax verified** - `py_compile` passes on `address_utils.py`, `reports.py`, `cron.py`, `alerts.py`, `schemas.py`
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — 4 commits: `96125f8` (cron fix + address_utils), `2e7d896` (skip geocoding), `b5ce32f` (sessionStorage), `5d5f7b0 → d757e2f` (build warnings)
+- ✅ **Deployed** — Backend `backend-jobjjx445-...` + Frontend `alert311-6w2u7dr4h-...` live ✅
+- 🎉 **MILESTONE:** 352 consecutive operational checks! Critical alert-matching bug fixed + 2 improvements shipped.
 
 **10:00 AM - Hourly Check (All Systems Operational + Panel Auto-Scroll to Active Card)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
