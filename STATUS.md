@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 8:00 AM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 349 Consecutive Checks!
+**Last Updated:** 2026-02-18 9:00 AM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 350 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,23 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**9:00 AM - Hourly Check (All Systems Operational + Duplicate Alert Detection)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.33s
+- ✅ **Real data integration verified** - `/reports/nearby` returning live SF 311 reports sorted by distance ✅
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **New UX feature: duplicate alert detection in `AlertPanel.tsx`:**
+  - **Problem:** The backend allows multiple alerts for the same address + report type with no warnings. A returning user who forgot they already set up an alert could create a duplicate and end up getting every SMS twice. The `GET /alerts` endpoint already existed but was never called from the frontend.
+  - **Fix:** Added a `isDuplicate` state and a `useEffect` that runs whenever the user reaches the `'create'` step (or changes the selected report type). It fetches `GET /alerts?phone={userPhone}`, compares active alerts against the current address + report type selection using a case-insensitive street address substring match, and sets `isDuplicate` when a match is found.
+  - When `isDuplicate` is true, the amber "You'll receive SMS alerts" info box is replaced with a blue `ℹ️` banner: "You already have an active Blocked Driveway & Parking alert for this address. Creating another will send you duplicate SMS notifications."
+  - Creation is still allowed — this is a warning, not a block. Users who want multiple alerts (different radius preferences, testing, etc.) can proceed.
+  - Effect includes a cancellation flag (`let cancelled = false`) to prevent stale state updates if the user navigates away before the fetch resolves. All network errors are silently swallowed — no UI error, no blocking behavior.
+  - Re-runs immediately when `selectedReportType` changes (so switching from "Blocked Driveway" to "Graffiti" re-checks against the user's Graffiti alerts).
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `563bdfa`, 1 file changed (+57/-9 lines)
+- ✅ **Deployed** — Frontend `alert311-659gdfg01-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 350 consecutive operational checks! Duplicate alert detection shipped.
 
 **8:00 AM - Hourly Check (All Systems Operational + Dead Code Removal + Accessibility)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
