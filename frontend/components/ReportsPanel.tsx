@@ -177,16 +177,26 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
                 (isExpanded ? reports : reports.slice(0, 4)).map((report) => (
                   <div
                     key={report.id}
+                    role={onReportClick ? 'button' : undefined}
+                    tabIndex={onReportClick ? 0 : undefined}
+                    aria-label={onReportClick ? `View ${report.type} at ${report.address} on map` : undefined}
                     onClick={() => {
                       onReportClick?.(report);
                       // Collapse the bottom sheet on mobile so the popup is visible
                       setIsExpanded(false);
                     }}
+                    onKeyDown={(e) => {
+                      if (onReportClick && (e.key === 'Enter' || e.key === ' ')) {
+                        e.preventDefault();
+                        onReportClick(report);
+                        setIsExpanded(false);
+                      }
+                    }}
                     className={`flex items-start gap-3 rounded-xl p-4 transition-colors ${
                       report.id === activeReportId
                         ? 'bg-primary/10 ring-1 ring-primary/30'
                         : 'bg-gray-100/80'
-                    } ${onReportClick ? 'cursor-pointer hover:bg-gray-200/80 active:bg-gray-300/80' : ''}`}
+                    } ${onReportClick ? 'cursor-pointer hover:bg-gray-200/80 active:bg-gray-300/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60' : ''}`}
                   >
                     <div className="relative h-11 w-11 shrink-0 rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center text-xl">
                       <span aria-hidden="true">{getReportIcon(report.type)}</span>
@@ -298,12 +308,21 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
               reports.map((report) => (
                 <div
                   key={report.id}
+                  role={onReportClick ? 'button' : undefined}
+                  tabIndex={onReportClick ? 0 : undefined}
+                  aria-label={onReportClick ? `View ${report.type} at ${report.address} on map` : undefined}
                   onClick={() => onReportClick?.(report)}
+                  onKeyDown={(e) => {
+                    if (onReportClick && (e.key === 'Enter' || e.key === ' ')) {
+                      e.preventDefault();
+                      onReportClick(report);
+                    }
+                  }}
                   className={`rounded-xl p-4 transition-colors ${
                     report.id === activeReportId
                       ? 'bg-primary/10 ring-1 ring-primary/30 hover:bg-primary/15'
                       : 'bg-gray-50 hover:bg-gray-100'
-                  } ${onReportClick ? 'cursor-pointer' : ''}`}
+                  } ${onReportClick ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60' : ''}`}
                 >
                   <div className="flex items-start gap-3.5">
                     <div className="relative h-12 w-12 shrink-0 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-gray-100 flex items-center justify-center text-xl">
