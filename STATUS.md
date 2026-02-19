@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 6:00 PM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 358 Consecutive Checks!
+**Last Updated:** 2026-02-18 7:00 PM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 359 Consecutive Checks!
 
 ---
 
@@ -166,7 +166,7 @@ alert311/
 
 ### Alerts
 - `POST /alerts` - Create new alert
-- `GET /alerts` - List user's alerts (TODO)
+- `GET /alerts` - List user's alerts ✅
 
 ### Reports
 - `GET /reports` - Get 311 reports (TODO)
@@ -217,6 +217,25 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**7:00 PM - Hourly Check (All Systems Operational + Popup CTA Context + Search Clear Button)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.18s
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **New UX: context-aware popup CTA label (`page.tsx`):**
+  - **Problem:** The map popup's "🔔 Set Alert for This Area" button was a fixed string, always implying "you haven't set one yet" — even when `hasAlert` was true (user already had an active alert for this location). This was inconsistent with the ReportsPanel which already used "Create Another Alert" as its CTA label when `hasAlert=true`.
+  - **Fix:** One-line change — `{hasAlert ? '🔔 Create Another Alert' : '🔔 Set Alert for This Area'}`. Same button, same handler, just a label that matches the user's actual context. Both surfaces (popup + panel) now use "Another" language consistently when the user has an existing alert.
+- ✨ **New UX: × clear button in AddressSearch (`AddressSearch.tsx`):**
+  - **Problem:** The search input had no way to clear its content except manually backspacing through the whole query. After pre-filling from `sessionStorage` (added at 11 AM), returning users who wanted a fresh search had to manually delete their last query character by character. Standard search input UX (mobile browsers, Google, etc.) always provides a clear affordance.
+  - **Fix:** Added a `×` icon button (right-side, inside the input) that appears when `query` is non-empty and not loading. Click: clears `query` state, hides/empties the results dropdown, resets `highlightedIndex`, removes `alert311_last_query` from `sessionStorage` (so Back→search truly starts fresh), then re-focuses the input for immediate re-typing.
+  - Input `pr-4` → `pr-10` to reserve space for the button and prevent text overlapping it.
+  - `type="button"` to prevent form submission. `aria-label="Clear search"` for accessibility.
+  - When loading is in progress, the spinner takes priority and the × button is hidden — the loading state can't be interrupted by clearing anyway.
+- ✅ **API docs endpoint updated** - `GET /alerts` marked ✅ in STATUS.md (it's fully working — the TODO label was stale from early project docs)
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `433bc20`, 2 files changed (+25/-3 lines)
+- ✅ **Deployed** — Frontend `alert311-n9h38uabz-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 359 consecutive operational checks! Popup CTA consistency + search clear button shipped.
 
 **6:00 PM - Hourly Check (All Systems Operational + Returning-User Alert Badge)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
