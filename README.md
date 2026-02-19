@@ -72,9 +72,22 @@ uvicorn app.main:app --reload
 ## Deployment
 
 **Current Deployments:**
-- **Frontend**: `alert311-ui.vercel.app` (auto-deploys from `main` branch `/frontend` folder)
-- **Backend**: `backend-sigma-nine-42.vercel.app` (auto-deploys from `main` branch `/backend` folder)
+- **Frontend**: `alert311-ui.vercel.app` (manual deployment via Vercel CLI)
+- **Backend**: `backend-sigma-nine-42.vercel.app` (manual deployment via Vercel CLI)
 - **Database**: Neon Postgres (connected via `DATABASE_URL`)
+
+**Deployment Process:**
+The projects were deployed via Vercel CLI (not GitHub integration), so commits to GitHub do **not** auto-deploy. After making changes:
+
+```bash
+# Backend
+cd backend
+vercel --prod --yes
+
+# Frontend  
+cd ../frontend
+vercel --prod --yes
+```
 
 **Planned:**
 - Custom domain: `www.alert311.com` → frontend
