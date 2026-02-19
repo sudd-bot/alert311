@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 7:00 PM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 359 Consecutive Checks!
+**Last Updated:** 2026-02-18 8:00 PM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 360 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,24 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**8:00 PM - Hourly Check (All Systems Operational + Report Count Chip in Header)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.38s
+- ✅ **Git status clean** - Pushed 2 previously-unsynced commits (7 PM docs + feat) from prior check
+- ✨ **New UX: report count chip in address header (`page.tsx`):**
+  - **Problem:** After searching an address, the only way to know how many 311 reports are nearby was to look at the "Nearby Reports" panel — either the count badge in the panel header (desktop/mobile) or the list itself. The address header bar at the top gave no activity signal at all. A user glancing at the header had no idea if they were looking at a quiet block or a problem hotspot.
+  - **Fix:** Added a compact count chip in the header address pill, right-aligned between the address text and the 🔔 Alert active badge (if present). The chip is color-coded by activity level:
+    - **Amber** (`bg-amber-500/20 text-amber-300 ring-amber-500/30`) for 1–4 reports — "some activity, normal"
+    - **Red** (`bg-red-500/20 text-red-300 ring-red-500/30`) for 5+ reports — "high activity, heads up"
+  - Shows only when `reportMarkers.length > 0` — no chip when the area is clear (the panel already shows "All clear! ✅" in that case). No chip during loading (reports haven't come in yet).
+  - Uses `tabular-nums` so the number doesn't cause layout shift when it increments. `title` tooltip shows the full text ("5 nearby 311 reports") and `aria-label` for screen readers.
+  - Data already available: `reportMarkers` state is set by `onReportsLoaded` callback from `ReportsPanel` — no new API calls, no prop threading. Zero cost.
+  - `shrink-0` ensures it never gets clipped by a long address name. Sits correctly alongside the 🔔 badge when both are present.
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `1ef0eb0`, 1 file changed (+16 lines)
+- ✅ **Deployed** — Frontend `alert311-fn5i752kv-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 360 consecutive operational checks! Report count chip shipped — header now gives at-a-glance neighbourhood activity signal.
 
 **7:00 PM - Hourly Check (All Systems Operational + Popup CTA Context + Search Clear Button)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
