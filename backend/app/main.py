@@ -87,11 +87,12 @@ async def root():
 async def health():
     """
     Health check for monitoring.
-    Includes database connectivity check.
+    Includes database connectivity and SF311 token availability.
     """
     from .core.database import SessionLocal
     from sqlalchemy import text
-    
+    from .services.token_manager import TokenManager
+
     db_status = "unknown"
     try:
         # Try to connect to database
@@ -102,8 +103,24 @@ async def health():
     except Exception as e:
         logger.warning(f"Database health check failed: {e}")
         db_status = "disconnected"
-    
+
+    # Check SF311 token availability (non-blocking for health check)
+    sf311_status = "unknown"
+    try:
+        db = SessionLocal()
+        token = await TokenManager.get_system_token(db)
+        db.close()
+        sf311_status = "available" if token else "not_initialized"
+    except Exception as e:
+        logger.warning(f"SF311 token health check failed: {e}")
+        sf311_status = "error"
+        try:
+            db.close()
+        except:
+            pass
+
     return {
         "status": "healthy",
-        "database": db_status
+        "database": db_status,
+        "sf311_token": sf311_status
     }
