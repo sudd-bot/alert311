@@ -218,6 +218,24 @@ All set in Vercel for both projects:
 
 ### 2026-02-18
 
+**9:00 PM - Hourly Check (All Systems Operational + Backend Resilience + Lazy Image Loading)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.15s
+- ✅ **Git status clean** - Working tree clean before changes
+- 🔒 **Backend resilience: partial failure tolerance in parallel SF311 fetch (`reports.py`):**
+  - **Problem:** The backend fetches `recently_opened` and `recently_closed` scopes in parallel via `asyncio.gather`. If *either* scope raised an exception (transient SF311 API error, token expiry, network hiccup), `asyncio.gather` re-raised the exception and the entire `/reports/nearby` endpoint returned 500 — even though the *other* scope's data was valid and sufficient. A transient partial API failure would blank the user's map entirely.
+  - **Fix:** Added `return_exceptions=True` to `asyncio.gather`. Each result is now inspected: if it's a `BaseException`, we fall back to an empty list for that scope and emit a `logger.warning` (so partial SF311 API failures are visible in Vercel logs without reaching the user). The endpoint gracefully serves data from whichever scope(s) succeed.
+  - Added `import logging` + `logger = logging.getLogger(__name__)` to the module (was missing — `cron.py` already had this pattern).
+- ⚡ **Frontend performance: lazy image loading across all report photos (`ReportsPanel.tsx`, `page.tsx`):**
+  - **Problem:** All report card photos (mobile cards, desktop cards) and popup photos were eagerly loaded. On initial panel open with 10 reports, the browser fired up to 10 simultaneous Cloudinary image requests — competing with the map tiles, SF311 API call, and any in-flight geocoding requests. Images below the fold (cards 5-10 on desktop, cards 2-4 collapsed on mobile) would never even be seen but still consumed bandwidth.
+  - **Fix:** Added `loading="lazy"` (defers off-screen image fetches until the user scrolls near them) + `decoding="async"` (browser decodes image data on a background thread instead of blocking the main thread / layout paint) to all 3 photo `<img>` elements: mobile card list, desktop card list, map popup.
+  - Zero visual change — images still appear the same way, just fetched/decoded more efficiently. The first 1-2 visible images are fetched immediately (they're in the viewport), only off-screen ones are deferred.
+- ✅ **Python syntax verified** - `py_compile` passes on `reports.py`
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `93e05e7`, 3 files changed (+21/-2 lines)
+- ✅ **Deployed** — Backend `backend-8x9dbaaez-...` + Frontend `alert311-acyjewm3w-...` live ✅
+- 🎉 **MILESTONE:** 361 consecutive operational checks! Backend partial-failure resilience + lazy image loading shipped.
+
 **8:00 PM - Hourly Check (All Systems Operational + Report Count Chip in Header)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
 - ✅ **Frontend responding** - HTTP 200 in ~0.38s
