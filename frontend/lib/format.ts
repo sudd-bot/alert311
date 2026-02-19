@@ -18,15 +18,20 @@ export function formatAddress(addr: string): string {
 }
 
 /**
- * Format a distance in meters into a human-readable string.
- * < 100m  → "52m away"
- * ≥ 100m  → "0.3mi away"
+ * Format a distance in meters into a human-readable string using US customary units.
+ * < 300m  → "Xft away"  (sub-quarter-mile: feet are more intuitive in American English)
+ * ≥ 300m  → "X.Xmi away" (longer distances: miles)
+ *
+ * Examples: 71m → "233ft away", 157m → "515ft away", 500m → "0.3mi away"
  */
 export function formatDistance(meters?: number | null): string {
   if (meters == null) return '';
-  if (meters < 100) return `${Math.round(meters)}m away`;
+  const FEET_THRESHOLD_METERS = 300; // ~984ft — below this, show feet
+  if (meters < FEET_THRESHOLD_METERS) {
+    const feet = Math.round(meters * 3.28084);
+    return `${feet}ft away`;
+  }
   const miles = meters / 1609.34;
-  if (miles < 0.1) return `${Math.round(meters)}m away`;
   return `${miles.toFixed(1)}mi away`;
 }
 

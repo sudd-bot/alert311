@@ -34,6 +34,8 @@ export default function Home() {
   const [hasAlert, setHasAlert] = useState(false);
   /** ID of the active alert — stored so the user can delete it via the badge button. */
   const [activeAlertId, setActiveAlertId] = useState<number | null>(null);
+  /** True while a DELETE /alerts/{id} request is in-flight — disables the × button. */
+  const [isRemovingAlert, setIsRemovingAlert] = useState(false);
   const [reportMarkers, setReportMarkers] = useState<Report[]>([]);
   // popupReport: the primary (first) report in the clicked cluster.
   // popupGroup: the full set of reports at that lat/lng — drives multi-report popup UI.
@@ -115,10 +117,14 @@ export default function Home() {
    *  On success, clears the badge. On failure, silently no-ops — the alert still exists,
    *  which is safe (user can try again, or the badge state is just cosmetically stale). */
   const handleRemoveAlert = useCallback(async () => {
-    if (!activeAlertId) return;
+    if (!activeAlertId || isRemovingAlert) return;
+    setIsRemovingAlert(true);
     try {
       const phone = localStorage.getItem('alert311_phone') ?? '';
-      if (!phone) return;
+      if (!phone) {
+        setIsRemovingAlert(false);
+        return;
+      }
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       await fetch(
         `${API_URL}/alerts/${activeAlertId}?phone=${encodeURIComponent(phone)}`,
@@ -128,8 +134,10 @@ export default function Home() {
       setActiveAlertId(null);
     } catch {
       // Silent fail — alert badge may be stale but no data is corrupted
+    } finally {
+      setIsRemovingAlert(false);
     }
-  }, [activeAlertId]);
+  }, [activeAlertId, isRemovingAlert]);
 
   const handleRecenter = useCallback(() => {
     if (selectedLocation) {
@@ -402,13 +410,21 @@ export default function Home() {
                       </span>
                       <button
                         onClick={handleRemoveAlert}
-                        className="flex h-5 w-5 items-center justify-center rounded-full text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                        title="Remove alert"
+                        disabled={isRemovingAlert}
+                        className="flex h-5 w-5 items-center justify-center rounded-full text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:cursor-wait"
+                        title={isRemovingAlert ? 'Removing…' : 'Remove alert'}
                         aria-label="Remove alert"
                       >
-                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        {isRemovingAlert ? (
+                          <svg className="h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                        ) : (
+                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        )}
                       </button>
                     </div>
                   )}
