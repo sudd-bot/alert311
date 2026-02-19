@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useMemo } from 'react';
+import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import MapboxMap, { Marker, Popup, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import AddressSearch from '@/components/AddressSearch';
@@ -138,6 +138,51 @@ export default function Home() {
       setIsRemovingAlert(false);
     }
   }, [activeAlertId, isRemovingAlert]);
+
+  /**
+   * When a location is first selected, silently check whether the user already has an
+   * active alert for it (phone stored in localStorage from a prior session).
+   * Pre-populates the 🔔 badge + activeAlertId without requiring the user to open AlertPanel.
+   *
+   * This covers the returning-user case: search the same address they alerted last week →
+   * badge appears immediately instead of looking like "no alert set".
+   *
+   * Edge cases handled:
+   * - If no phone in localStorage → no-op (first-time user, nothing to restore)
+   * - If the API is slow / offline → silent fail (badge just won't pre-populate)
+   * - If user just created an alert this session → effect doesn't re-run (selectedLocation unchanged)
+   * - If user deleted an alert → alert gone from DB, GET /alerts won't return it
+   */
+  useEffect(() => {
+    if (!selectedLocation) return;
+    // Skip if we already set hasAlert this session (e.g. user just created one)
+    if (hasAlert) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const phone = localStorage.getItem('alert311_phone');
+        if (!phone) return;
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${API_URL}/alerts?phone=${encodeURIComponent(phone)}`);
+        if (!res.ok || cancelled) return;
+        const alerts: Array<{ id: number; address: string; active: boolean; report_type_id: string }> = await res.json();
+        if (cancelled) return;
+        // Fuzzy match: compare the street portion of the selected address against stored alert address
+        const localStreet = selectedLocation.address.split(',')[0].trim().toLowerCase();
+        const match = alerts.find(
+          (a) => a.active && a.address.toLowerCase().includes(localStreet)
+        );
+        if (match) {
+          setHasAlert(true);
+          setActiveAlertId(match.id);
+        }
+      } catch {
+        // Silent fail — badge simply won't pre-populate; user can still create/delete normally
+      }
+    })();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedLocation]);
 
   const handleRecenter = useCallback(() => {
     if (selectedLocation) {
