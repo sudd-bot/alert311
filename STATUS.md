@@ -218,6 +218,22 @@ All set in Vercel for both projects:
 
 ### 2026-02-18
 
+**4:00 PM - Hourly Check (All Systems Operational + Alert Deletion)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.19s
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **New UX: alert deletion — × button on "Alert active" badge (`page.tsx`):**
+  - **Problem:** Once a user creates an alert, there was no way to undo it from the UI. The "🔔 Alert active" badge was purely informational — a dead end. Users who created an alert by accident, at the wrong address, or for the wrong report type had no recourse without going directly to the backend API. The backend had `DELETE /alerts/{id}` all along, but nothing in the frontend ever called it.
+  - **Fix:** `page.tsx` now tracks `activeAlertId: number | null` state alongside `hasAlert`. `handleAlertCreated` stores the returned `alert.id` (previously the `AlertCreatedData` object was received but the `id` was discarded — the param was even prefixed `_alert` to signal intentional non-use).
+  - The "🔔 Alert active" badge now has a small `×` close button right-aligned beside it. On hover: `text-red-400 hover:bg-red-500/10` — subtle red tint signals a destructive action without being alarming. `aria-label="Remove alert"` for accessibility.
+  - `handleRemoveAlert` reads the phone from `localStorage` (key `alert311_phone`, set during `AlertPanel` verification) and calls `DELETE /alerts/{activeAlertId}?phone={phone}`. On success: clears `hasAlert` and `activeAlertId`. Silent fail on network error — badge may be cosmetically stale, but no data is corrupted and the user can try again.
+  - `handleBack` resets `activeAlertId(null)` alongside `hasAlert(false)`.
+  - Zero TypeScript errors after change.
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `e758a93`, 1 file changed (+44/-9 lines)
+- ✅ **Deployed** — Frontend `alert311-nme2nywz5-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 357 consecutive operational checks! Alert deletion wired up — users can now remove their own alerts from the UI.
+
 **3:00 PM - Hourly Check (All Systems Operational + Escape-to-Close + Refresh Button + Alert-Aware CTA + Proper Typing)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
 - ✅ **Frontend responding** - HTTP 200 in ~0.19s
