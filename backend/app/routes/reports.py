@@ -6,12 +6,15 @@ from sqlalchemy.orm import Session
 from typing import Annotated, List, Optional
 from pydantic import BaseModel
 import json
+import logging
 import math
 import urllib.request
 import urllib.error
 import ssl
 import asyncio
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 from ..core.database import get_db
 from ..models import User, Report, Alert
@@ -137,11 +140,21 @@ async def get_nearby_reports(
                 result = json.loads(resp.read().decode('utf-8'))
                 return result.get("data", {}).get("tickets", {}).get("nodes", [])
 
-        # Fetch recently_opened and recently_closed in parallel (cuts latency ~50%)
-        opened_tickets, closed_tickets = await asyncio.gather(
+        # Fetch recently_opened and recently_closed in parallel (cuts latency ~50%).
+        # return_exceptions=True: if one scope fails (transient SF311 API error, token expiry, etc.)
+        # we still return results from the other scope rather than surfacing a 500 to the user.
+        results = await asyncio.gather(
             asyncio.to_thread(fetch_scope, "recently_opened"),
             asyncio.to_thread(fetch_scope, "recently_closed"),
+            return_exceptions=True,
         )
+        opened_tickets = results[0] if not isinstance(results[0], BaseException) else []
+        closed_tickets = results[1] if not isinstance(results[1], BaseException) else []
+        # Log partial failures so we can monitor SF311 API health without breaking the endpoint
+        if isinstance(results[0], BaseException):
+            logger.warning("SF311 recently_opened fetch failed: %s", results[0])
+        if isinstance(results[1], BaseException):
+            logger.warning("SF311 recently_closed fetch failed: %s", results[1])
         raw_tickets = opened_tickets + closed_tickets
         
         # Deduplicate by ticket ID (same ticket can appear in both recently_opened and recently_closed)

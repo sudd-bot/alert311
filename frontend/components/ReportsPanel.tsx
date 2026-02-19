@@ -257,6 +257,8 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
                         <img
                           src={report.photo_url}
                           alt={report.type}
+                          loading="lazy"
+                          decoding="async"
                           className="absolute inset-0 h-full w-full object-cover"
                           onError={(e) => { e.currentTarget.style.display = 'none'; }}
                         />
@@ -414,6 +416,8 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
                         <img
                           src={report.photo_url}
                           alt={report.type}
+                          loading="lazy"
+                          decoding="async"
                           className="absolute inset-0 h-full w-full object-cover"
                           onError={(e) => { e.currentTarget.style.display = 'none'; }}
                         />

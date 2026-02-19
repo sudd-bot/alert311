@@ -291,6 +291,8 @@ export default function Home() {
                     <img
                       src={activeReport.photo_url}
                       alt={activeReport.type}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-28 object-cover"
                       onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     />
