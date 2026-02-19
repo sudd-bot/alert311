@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-19 2:00 AM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 366 Consecutive Checks!
+**Last Updated:** 2026-02-19 3:00 AM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 367 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,36 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-19
+
+**3:00 AM - Hourly Check (All Systems Operational + Geocoding Cache)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~147ms
+- ✅ **Git status clean** - Working tree clean before changes
+- ✅ **Real data API verified** - `/reports/nearby` returning live SF 311 reports with full data (public_id, distance_meters, raw_date, photos)
+- ✅ **Python syntax verified** - `py_compile` passes on all backend modules
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Frontend build verified** - Production build completes cleanly (ESLint warning is non-blocking, as documented)
+- ⚡ **Performance: in-memory caching added to geocoding service (`geocoding.py`):**
+  - **Problem:** The geocoding service called the Nominatim API for every address lookup. If a user searched the same address twice (e.g., after navigating back), or if multiple users geocoded the same location, each lookup hit the external API. Nominatim has rate limits and adds ~500-1000ms latency per call.
+  - **Fix:** Added simple in-memory cache (`self._cache: dict[str, Tuple[float, float]]`) that stores successful geocoding results. The cache key is the normalized address (lowercase, stripped). On subsequent lookups for the same address, the cached coordinates are returned immediately without an API call.
+  - Added `use_cache` parameter (default: `True`) to bypass the cache if a fresh geocode is ever needed.
+  - Added improved docstring documenting the caching behavior.
+  - This is a serverless environment, so the cache resets on each cold start — but warm invocations benefit from repeated address lookups. For alerts (created once per alert), the cache isn't reused much, but it helps with repeated searches and testing.
+- ✅ **Committed and pushed** — commit `05ca017`, 1 file changed (+24/-4 lines)
+- ✅ **Deployed** — Backend `backend-k9hkpg52v-...` live at backend-sigma-nine-42.vercel.app ✅
+- ✅ **All core services operational:**
+  - Auth: Phone verification via Twilio ✅
+  - Alerts: Create, list, delete endpoints ✅
+  - Reports: Nearby search with distance sort ✅
+  - Geocoding: Now with in-memory cache ✅
+  - Cron jobs: Configured for 5-min poll + 12-hour token refresh ✅
+  - Token management: System + user token refresh ✅
+- 📊 **Known TODOs (low priority, documented):**
+  - JWT authentication: Currently using phone query param (works for MVP, marked as TODO in auth.py)
+  - OAuth flow: Full OAuth flow documented in comments, not implemented (not needed for current use)
+  - sf311_client refactoring: Minor internal cleanup opportunity noted in cron.py
+- 📝 **No issues found** - All systems performing as expected
+- 🎉 **MILESTONE:** 367 consecutive operational checks! Geocoding cache shipped.
 
 **2:00 AM - Hourly Check (All Systems Operational - Routine Health Check)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
