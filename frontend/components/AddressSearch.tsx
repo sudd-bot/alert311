@@ -209,12 +209,32 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
             }
           }}
           placeholder="Enter an address in SF..."
-          className="w-full h-14 rounded-xl bg-white/10 pl-12 pr-4 text-base text-white placeholder:text-white/40 ring-1 ring-white/20 focus:ring-2 focus:ring-primary focus:outline-none transition-all"
+          className="w-full h-14 rounded-xl bg-white/10 pl-12 pr-10 text-base text-white placeholder:text-white/40 ring-1 ring-white/20 focus:ring-2 focus:ring-primary focus:outline-none transition-all"
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"
           spellCheck="false"
         />
+        {/* Clear button — appears when there's a query; clears input + results + sessionStorage */}
+        {query && !isLoading && (
+          <button
+            type="button"
+            onClick={() => {
+              setQuery('');
+              setResults([]);
+              setShowResults(false);
+              setHighlightedIndex(-1);
+              inputRef.current?.focus();
+              try { sessionStorage.removeItem('alert311_last_query'); } catch { /* ignore */ }
+            }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full text-white/40 hover:text-white/80 hover:bg-white/10 transition-colors"
+            aria-label="Clear search"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Use My Location Button - Better touch target */}

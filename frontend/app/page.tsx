@@ -352,7 +352,9 @@ export default function Home() {
                         </button>
                       </div>
                     )}
-                    {/* CTA: let users jump straight from a report popup to creating an alert */}
+                    {/* CTA: let users jump straight from a report popup to creating an alert.
+                        Label is context-aware — if the user already has an active alert for this
+                        location, nudge them towards "another" rather than implying a first-time action. */}
                     <button
                       onClick={() => {
                         closePopup();
@@ -360,7 +362,7 @@ export default function Home() {
                       }}
                       className="mt-2.5 w-full rounded-lg bg-primary py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
                     >
-                      🔔 Set Alert for This Area
+                      {hasAlert ? '🔔 Create Another Alert' : '🔔 Set Alert for This Area'}
                     </button>
                   </div>
                 </div>
