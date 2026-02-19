@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 8:00 PM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 360 Consecutive Checks!
+**Last Updated:** 2026-02-18 10:00 PM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 362 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,29 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**10:00 PM - Hourly Check (All Systems Operational + Open-Count Header Chip + Refresh Toast)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.14s
+- ✅ **Git status clean** - Working tree clean before changes
+- ✨ **UX: header count chip now shows open-count instead of total count (`page.tsx`):**
+  - **Problem:** The report count chip in the address header showed raw total (e.g., "10" in red). But closed reports are resolved — they don't need attention. A user on a block with 10 reports, 9 of which are resolved, would see "10" in alarm-red and think something is wrong, when in fact only 1 issue is still open.
+  - **Fix:** Chip now filters `reportMarkers` to `status === 'open'` and displays the open count. Color thresholds are the same (amber <5, red ≥5) but now based on actionable open reports. Tooltip shows `"{N} open reports near this address (M total)"` — full context on hover.
+  - **New state: all resolved** — when `reportMarkers.length > 0` but `openCount === 0`, shows `"all resolved"` in a subtle emerald chip instead of hiding the chip. This tells users "this block has had 311 activity before, but it's all been resolved" — reassuring rather than ambiguous.
+  - Zero new API calls — data already loaded in `reportMarkers` state.
+- ✨ **UX: refresh toast confirmation in ReportsPanel (`ReportsPanel.tsx`):**
+  - **Problem:** Clicking the ↺ refresh button in the reports panel gave no user feedback beyond the spinner during load. Once done, the panel just silently updated with new (or same) data. Users had no confirmation that the refresh completed.
+  - **Fix:** Wired `useToast` into `ReportsPanel` (it was the only interactive component that hadn't done this). Added `isManualRefreshRef` — a ref (not state) that the new `handleManualRefresh` handler sets to `true` before calling `fetchReports`. Inside `fetchReports`, `wasManual` is captured and the ref reset immediately — so the initial mount auto-fetch is always silent (no toast on page load), only user-triggered refreshes get feedback.
+  - Toast messages:
+    - 0 reports: `info` — "No reports near this address right now."
+    - Reports all closed: `success` — "N reports nearby — all resolved ✓"
+    - Reports with open: `info` — "N open report(s) near this address"
+    - Network error: `error` — "Could not refresh reports. Try again."
+  - All 4 refresh/retry buttons (mobile header, mobile error retry, desktop header, desktop error retry) now call `handleManualRefresh` instead of `fetchReports` directly.
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `86da062`, 2 files changed (+63/-18 lines)
+- ✅ **Deployed** — Frontend `alert311-qmpwloanc-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 362 consecutive operational checks! Open-count chip + refresh toast shipped.
 
 **9:00 PM - Hourly Check (All Systems Operational + Backend Resilience + Lazy Image Loading)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
