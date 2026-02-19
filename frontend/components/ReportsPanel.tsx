@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { formatDistance, formatDate, formatAddress } from '@/lib/format';
+import { useToast } from './Toast';
 
 interface ReportsPanelProps {
   address: string;
@@ -83,10 +84,18 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
   const [hasError, setHasError] = useState(false);
   /** Refs to each rendered report card — keyed by report.id. Used to scroll the active card into view. */
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  /**
+   * Tracks whether the current fetch was triggered manually by the user (refresh button click)
+   * vs the initial auto-load on mount. Only manual refreshes show a toast confirmation.
+   */
+  const isManualRefreshRef = useRef(false);
+  const { addToast } = useToast();
 
   const fetchReports = useCallback(async () => {
     setIsLoading(true);
     setHasError(false);
+    const wasManual = isManualRefreshRef.current;
+    isManualRefreshRef.current = false; // reset so next auto-fetch doesn't toast
     try {
       const params = new URLSearchParams({
         lat: lat.toString(),
@@ -103,17 +112,37 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
       const data = await response.json();
       setReports(data);
       onReportsLoaded?.(data);
+      // Confirm manual refresh with a brief toast — distinguish from the initial silent load
+      if (wasManual) {
+        const openCount = (data as Report[]).filter((r) => r.status === 'open').length;
+        if (data.length === 0) {
+          addToast('info', 'No reports near this address right now.');
+        } else if (openCount === 0) {
+          addToast('success', `${data.length} report${data.length !== 1 ? 's' : ''} nearby — all resolved ✓`);
+        } else {
+          addToast('info', `${openCount} open report${openCount !== 1 ? 's' : ''} near this address`);
+        }
+      }
     } catch (error) {
       console.error('Error fetching reports:', error);
       setHasError(true);
       setReports([]);
       onReportsLoaded?.([]);
+      if (wasManual) {
+        addToast('error', 'Could not refresh reports. Try again.');
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [lat, lng]);
+  }, [lat, lng, addToast]);
 
   useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
+
+  /** User-triggered refresh — sets the manual flag so fetchReports can show a toast. */
+  const handleManualRefresh = useCallback(() => {
+    isManualRefreshRef.current = true;
     fetchReports();
   }, [fetchReports]);
 
@@ -168,7 +197,7 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
                 </h2>
                 {/* Refresh button — re-fetches latest 311 reports without navigating back */}
                 <button
-                  onClick={fetchReports}
+                  onClick={handleManualRefresh}
                   disabled={isLoading}
                   className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-200 hover:text-gray-600 disabled:opacity-40 transition-colors"
                   aria-label="Refresh reports"
@@ -204,7 +233,7 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
                   <p className="font-semibold text-gray-700 text-sm">Couldn't load reports</p>
                   <p className="text-gray-500 text-xs mt-1">Check your connection and try again.</p>
                   <button
-                    onClick={fetchReports}
+                    onClick={handleManualRefresh}
                     className="mt-3 text-xs text-primary font-medium hover:underline"
                   >
                     Retry
@@ -330,7 +359,7 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
               </h2>
               {/* Refresh button — re-fetches latest 311 reports */}
               <button
-                onClick={fetchReports}
+                onClick={handleManualRefresh}
                 disabled={isLoading}
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-40 transition-colors"
                 aria-label="Refresh reports"
@@ -367,7 +396,7 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
                 <p className="font-semibold text-gray-700">Couldn't load reports</p>
                 <p className="text-sm text-gray-500 mt-1">Check your connection and try again.</p>
                 <button
-                  onClick={fetchReports}
+                  onClick={handleManualRefresh}
                   className="mt-4 text-sm text-primary font-medium hover:underline"
                 >
                   Retry

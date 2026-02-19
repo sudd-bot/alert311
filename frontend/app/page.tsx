@@ -452,19 +452,35 @@ export default function Home() {
                   {/* Report count chip — only shown when reports have loaded. Color-coded by
                       activity level: amber for 1-4 (normal), red for 5+ (high activity).
                       Gives users a quick neighbourhood heat signal in the header bar. */}
-                  {reportMarkers.length > 0 && (
-                    <span
-                      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold tabular-nums ${
-                        reportMarkers.length >= 5
-                          ? 'bg-red-500/20 text-red-300 ring-1 ring-red-500/30'
-                          : 'bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/30'
-                      }`}
-                      title={`${reportMarkers.length} nearby 311 report${reportMarkers.length !== 1 ? 's' : ''}`}
-                      aria-label={`${reportMarkers.length} nearby reports`}
-                    >
-                      {reportMarkers.length}
-                    </span>
-                  )}
+                  {reportMarkers.length > 0 && (() => {
+                    const openCount = reportMarkers.filter((r) => r.status === 'open').length;
+                    if (openCount > 0) {
+                      // Amber for 1-4 open issues (normal), red for 5+ open issues (hotspot)
+                      return (
+                        <span
+                          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold tabular-nums ${
+                            openCount >= 5
+                              ? 'bg-red-500/20 text-red-300 ring-1 ring-red-500/30'
+                              : 'bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/30'
+                          }`}
+                          title={`${openCount} open 311 report${openCount !== 1 ? 's' : ''} near this address (${reportMarkers.length} total)`}
+                          aria-label={`${openCount} open nearby reports`}
+                        >
+                          {openCount} open
+                        </span>
+                      );
+                    }
+                    // All resolved — subtle green chip so users know the area was active but is now clear
+                    return (
+                      <span
+                        className="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20"
+                        title={`${reportMarkers.length} nearby 311 report${reportMarkers.length !== 1 ? 's' : ''} — all resolved`}
+                        aria-label="All nearby reports resolved"
+                      >
+                        all resolved
+                      </span>
+                    );
+                  })()}
                   {hasAlert && (
                     <div className="shrink-0 flex items-center gap-1">
                       <span
