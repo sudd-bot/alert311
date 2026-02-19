@@ -25,8 +25,12 @@ class TwilioVerifyService:
             verification = self.client.verify.v2.services(
                 self.verify_service_sid
             ).verifications.create(to=phone, channel="sms")
-            
-            return verification.status == "pending"
+
+            if verification.status == "pending":
+                logger.info(f"Verification code sent to {phone} (SID: {verification.sid})")
+                return True
+            logger.warning(f"Verification created with non-pending status: {verification.status}")
+            return False
         except TwilioRestException as e:
             logger.error(f"Twilio verification send error: {e}")
             return False
@@ -40,8 +44,12 @@ class TwilioVerifyService:
             verification_check = self.client.verify.v2.services(
                 self.verify_service_sid
             ).verification_checks.create(to=phone, code=code)
-            
-            return verification_check.status == "approved"
+
+            if verification_check.status == "approved":
+                logger.info(f"Phone {phone} verified successfully")
+                return True
+            logger.info(f"Phone {phone} verification check failed with status: {verification_check.status}")
+            return False
         except TwilioRestException as e:
             logger.error(f"Twilio verification check error: {e}")
             return False

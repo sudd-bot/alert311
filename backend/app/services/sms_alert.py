@@ -19,23 +19,27 @@ class SMSAlertService:
     def send_alert(self, to_phone: str, report_data: Dict[str, Any]) -> bool:
         """
         Send SMS alert about a matching 311 report.
-        
+
         Args:
             to_phone: Recipient phone number
             report_data: 311 report data from API
-        
+
         Returns:
             True if SMS sent successfully, False otherwise
         """
         message_body = self._format_alert_message(report_data)
-        
+
         try:
             message = self.client.messages.create(
                 body=message_body,
                 from_=self.from_number,
                 to=to_phone,
             )
-            return message.sid is not None
+            if message.sid:
+                logger.info(f"SMS alert sent successfully to {to_phone} (SID: {message.sid})")
+                return True
+            logger.warning(f"SMS alert created but no SID returned for {to_phone}")
+            return False
         except TwilioRestException as e:
             logger.error(f"SMS alert send error to {to_phone}: {e}")
             return False
