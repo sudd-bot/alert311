@@ -1,6 +1,7 @@
 """
 Authentication routes for user registration and phone verification.
 """
+import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -8,6 +9,8 @@ from ..core.database import get_db
 from ..models import User
 from ..schemas import UserRegister, UserVerify, UserResponse, SuccessResponse
 from ..services.twilio_verify import twilio_verify_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -78,8 +81,6 @@ async def verify_phone(verify_data: UserVerify, db: Session = Depends(get_db)):
         await TokenManager.assign_token_to_user(user, db)
     except Exception as e:
         # Log but don't fail - token can be assigned later
-        import logging
-        logger = logging.getLogger(__name__)
         logger.warning(f"Failed to assign SF 311 token to user {user.phone}: {e}")
     
     return user
