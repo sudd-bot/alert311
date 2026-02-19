@@ -32,6 +32,8 @@ export default function Home() {
   const [hasSearched, setHasSearched] = useState(false);
   /** True once the user has successfully created an alert for the current location. */
   const [hasAlert, setHasAlert] = useState(false);
+  /** ID of the active alert — stored so the user can delete it via the badge button. */
+  const [activeAlertId, setActiveAlertId] = useState<number | null>(null);
   const [reportMarkers, setReportMarkers] = useState<Report[]>([]);
   // popupReport: the primary (first) report in the clicked cluster.
   // popupGroup: the full set of reports at that lat/lng — drives multi-report popup UI.
@@ -66,12 +68,11 @@ export default function Home() {
     []
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleAlertCreated = useCallback((_alert: AlertCreatedData) => {
+  const handleAlertCreated = useCallback((alert: AlertCreatedData) => {
     // Alert was created — set the badge. Panel handles its own close
     // (via setTimeout → onClose after the success animation, or Done button).
-    // _alert data available here for future use (e.g. alert ID tracking, list display).
     setHasAlert(true);
+    setActiveAlertId(alert.id);
   }, []);
 
   const handleCreateNew = () => {
@@ -101,12 +102,34 @@ export default function Home() {
     setPopupGroup([]);
     setPopupGroupIndex(0);
     setHasAlert(false);
+    setActiveAlertId(null);
     mapRef.current?.flyTo({
       center: [SF_CENTER.lng, SF_CENTER.lat],
       zoom: 12,
       duration: 1500,
     });
   };
+
+  /** Delete the active alert via the backend API.
+   *  Reads the phone number from localStorage (set during AlertPanel verification).
+   *  On success, clears the badge. On failure, silently no-ops — the alert still exists,
+   *  which is safe (user can try again, or the badge state is just cosmetically stale). */
+  const handleRemoveAlert = useCallback(async () => {
+    if (!activeAlertId) return;
+    try {
+      const phone = localStorage.getItem('alert311_phone') ?? '';
+      if (!phone) return;
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      await fetch(
+        `${API_URL}/alerts/${activeAlertId}?phone=${encodeURIComponent(phone)}`,
+        { method: 'DELETE' }
+      );
+      setHasAlert(false);
+      setActiveAlertId(null);
+    } catch {
+      // Silent fail — alert badge may be stale but no data is corrupted
+    }
+  }, [activeAlertId]);
 
   const handleRecenter = useCallback(() => {
     if (selectedLocation) {
@@ -370,12 +393,24 @@ export default function Home() {
                     {selectedLocation.address.split(',')[0]}
                   </span>
                   {hasAlert && (
-                    <span
-                      className="shrink-0 flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[11px] font-semibold text-emerald-300 ring-1 ring-emerald-500/30"
-                      title="Alert active for this location"
-                    >
-                      🔔 Alert active
-                    </span>
+                    <div className="shrink-0 flex items-center gap-1">
+                      <span
+                        className="flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[11px] font-semibold text-emerald-300 ring-1 ring-emerald-500/30"
+                        title="Alert active for this location"
+                      >
+                        🔔 Alert active
+                      </span>
+                      <button
+                        onClick={handleRemoveAlert}
+                        className="flex h-5 w-5 items-center justify-center rounded-full text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        title="Remove alert"
+                        aria-label="Remove alert"
+                      >
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
