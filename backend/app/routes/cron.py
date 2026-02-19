@@ -65,18 +65,14 @@ async def poll_311_reports(
                 # User doesn't have tokens yet, use system token
                 access_token = system_token
             
-            # For now, we'll call SF 311 API manually since we need to pass raw token
-            # TODO: Update sf311_client to accept raw token instead of user object
-            # Search for reports near this alert's location
-            # Using system token for now until we update sf311_client
+            # Search for reports near this alert's location using raw token
             reports = await sf311_client.search_reports(
-                user=user,
-                db=db,
                 latitude=alert.latitude,
                 longitude=alert.longitude,
                 ticket_type_id=alert.report_type_id,
                 limit=20,
                 scope="recently_opened",
+                access_token=access_token,
             )
             
             # Filter reports to address match.

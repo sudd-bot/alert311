@@ -127,32 +127,41 @@ class SF311Client:
     
     async def search_reports(
         self,
-        user,
-        db,
         latitude: float,
         longitude: float,
         ticket_type_id: Optional[str] = None,
         search: Optional[str] = None,
         limit: int = 20,
         scope: str = "recently_opened",
+        access_token: Optional[str] = None,
+        user=None,
+        db=None,
     ) -> List[Dict[str, Any]]:
         """
         Search for 311 reports near a location.
-        
+
         Args:
-            user: User model instance (with 311 tokens)
-            db: Database session
             latitude: Center latitude
             longitude: Center longitude
             ticket_type_id: Filter by specific ticket type (e.g., parking on sidewalk)
             search: Text search filter
             limit: Max number of results
             scope: "recently_opened" or "recently_closed"
-        
+            access_token: Optional raw access token. If provided, user/db are not required.
+            user: Optional User model instance (with 311 tokens). Required if access_token not provided.
+            db: Optional Database session. Required if access_token not provided.
+
         Returns:
             List of report dictionaries
         """
-        access_token = await self._get_valid_token_for_user(user, db)
+        if access_token:
+            # Use the provided token directly
+            token = access_token
+        else:
+            # Get token from user (legacy behavior for backwards compatibility)
+            if not user or not db:
+                raise ValueError("Must provide either access_token OR both user and db")
+            token = await self._get_valid_token_for_user(user, db)
         
         # Build GraphQL payload (from reporter/spotclient/graphql.py logic)
         payload = self._build_search_payload(
@@ -163,11 +172,11 @@ class SF311Client:
             limit=limit,
             scope=scope,
         )
-        
+
         headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {access_token}",
+            "Authorization": f"Bearer {token}",
             "User-Agent": "Alert311/1.0",
         }
         
