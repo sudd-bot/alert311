@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-18 3:00 PM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 356 Consecutive Checks!
+**Last Updated:** 2026-02-18 6:00 PM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 358 Consecutive Checks!
 
 ---
 
@@ -217,6 +217,22 @@ All set in Vercel for both projects:
 
 
 ### 2026-02-18
+
+**6:00 PM - Hourly Check (All Systems Operational + Returning-User Alert Badge)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.16s
+- ✅ **Git status clean** - Pushed 1 previously-unsynced commit (`502ba6a` feet/miles format + delete loading state) from 5 PM check
+- ✨ **New UX: pre-populate 🔔 alert badge for returning users on address load (`page.tsx`):**
+  - **Problem:** When a returning user searches an address they previously set an alert for, the `hasAlert` badge was always absent — it only appeared if the user *just created* an alert during the current session. The alert was still active in the database, but the UI had no way to know that without asking the backend. A user who created an alert last week would see the same "no alert" UI as a first-time visitor, with no indication their alert was still watching.
+  - **Fix:** Added a `useEffect` in `page.tsx` that triggers when `selectedLocation` changes. It reads the phone number from `localStorage` (set during any previous AlertPanel verification). If present, it calls `GET /alerts?phone=...` and fuzzy-matches active alerts against the street portion of the current address. On match: sets `hasAlert(true)` and `activeAlertId(match.id)` — the 🔔 badge and × delete button appear immediately without any user action.
+  - The effect skips silently if: no phone in localStorage (first-time user), API is offline (badge just won't appear), or `hasAlert` is already true this session (just created one — don't re-query).
+  - Uses the same fuzzy street-match pattern as AlertPanel's duplicate check (`address.split(',')[0]` street portion → `includes()` against stored alert address). Consistent matching logic.
+  - `cancelled = true` cleanup on unmount prevents stale state updates if the user navigates away before the fetch resolves.
+  - The delete button (`handleRemoveAlert`) already clears `hasAlert` and `activeAlertId` on success — no interaction with the new effect (which only runs once on location load).
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Committed and pushed** — commit `de85b47`, 1 file changed (+46/-1 lines)
+- ✅ **Deployed** — Frontend `alert311-pllk6z1at-...` live at alert311-ui.vercel.app ✅
+- 🎉 **MILESTONE:** 358 consecutive operational checks! Returning-user alert badge pre-population shipped.
 
 **4:00 PM - Hourly Check (All Systems Operational + Alert Deletion)** ✅
 - ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
