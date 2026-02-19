@@ -1,7 +1,7 @@
 # Alert311 - Development Status
 
-**Last Updated:** 2026-02-19 5:00 AM PST
-**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 369 Consecutive Checks!
+**Last Updated:** 2026-02-19 6:00 AM PST
+**Status:** ✅ **ALL SYSTEMS OPERATIONAL** | Real Data Integration Deployed | 🎉 370 Consecutive Checks!
 
 ---
 
@@ -169,7 +169,8 @@ alert311/
 - `GET /alerts` - List user's alerts ✅
 
 ### Reports
-- `GET /reports` - Get 311 reports (TODO)
+- `GET /reports` - Get stored 311 reports for an alert
+- `GET /reports/nearby` - Get nearby 311 reports from SF API ✅
 
 ### Health
 - `GET /` - App info
@@ -215,6 +216,32 @@ All set in Vercel for both projects:
 
 ## 📝 Daily Progress Log
 
+
+### 2026-02-19
+
+**6:00 AM - Hourly Check (All Systems Operational + sf311_client Refactoring)** ✅
+- ✅ **Backend health check passed** - `{"status":"healthy","database":"connected"}` responding correctly
+- ✅ **Frontend responding** - HTTP 200 in ~0.11s
+- ✅ **Git status clean** - Working tree clean before changes
+- ✅ **Real data API verified** - `/reports/nearby` returning live SF 311 reports with full data (public_id, distance_meters, raw_date, photos, status)
+- ✅ **Python syntax verified** - `py_compile` passes on all backend modules
+- ✅ **TypeScript verified** - `tsc --noEmit` passes with zero errors
+- ✅ **Frontend build verified** - Production build completes cleanly (ESLint warning is non-blocking, as documented)
+- ⚡ **Code quality: refactored `sf311_client.search_reports()` to accept raw `access_token` parameter:**
+  - **Problem:** The cron job retrieved tokens via `TokenManager.get_user_token()` and then passed `user` + `db` to `search_reports()`, which internally called `_get_valid_token_for_user(user, db)` to extract and validate the token. This was redundant - the token was already validated by `TokenManager`, but `search_reports()` had no way to accept it directly.
+  - **Fix:** Added optional `access_token` parameter to `search_reports()`. When provided, it's used directly without any user/db logic. When omitted, the legacy behavior (get token from user object) is preserved for backwards compatibility.
+  - Updated `cron.py` to pass the raw `access_token` instead of `user=user, db=db`. The `user` object is still used earlier in the cron loop for database lookups, but now `search_reports()` doesn't need it.
+  - Removed the TODO comment in `cron.py` about this refactoring.
+  - Result: Cleaner separation of concerns - `TokenManager` handles token lifecycle, `search_reports()` just uses the token.
+- ✅ **Committed and pushed** — commit `9f0fde4`, 2 files changed (+20/-15 lines)
+- ✅ **Deployed** — Backend `backend-hba8kkr09-...` live at backend-sigma-nine-42.vercel.app ✅
+- 📊 **Code review findings:**
+  - Reviewed all TODO comments in backend code — all are now resolved or low-priority:
+    - ~~`cron.py`: sf311_client refactoring~~ ✅ RESOLVED — just shipped
+    - `auth.py`: JWT authentication (works for MVP, documented as future improvement)
+    - `sf311_auth.py` & `sf311.py`: Full OAuth flow (documented, not needed for current use)
+- 📝 **No issues found** - All systems performing as expected
+- 🎉 **MILESTONE:** 370 consecutive operational checks! sf311_client refactoring shipped.
 
 ### 2026-02-19
 
