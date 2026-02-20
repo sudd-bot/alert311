@@ -337,11 +337,12 @@ export default function Home() {
                     </div>
                     {/* Prev/Next navigation for clustered markers */}
                     {isCluster && (
-                      <div className="flex items-center justify-between gap-2 mt-2.5">
+                      <div className="flex items-center justify-between gap-2 mt-2.5" role="navigation" aria-label="Report navigation">
                         <button
                           onClick={() => setPopupGroupIndex((i) => Math.max(i - 1, 0))}
                           disabled={popupGroupIndex === 0}
                           className="flex-1 rounded-lg border border-gray-200 py-1 text-xs font-medium text-gray-600 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+                          aria-label="Previous report"
                         >
                           ← Prev
                         </button>
@@ -349,6 +350,7 @@ export default function Home() {
                           onClick={() => setPopupGroupIndex((i) => Math.min(i + 1, popupGroup.length - 1))}
                           disabled={popupGroupIndex === popupGroup.length - 1}
                           className="flex-1 rounded-lg border border-gray-200 py-1 text-xs font-medium text-gray-600 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+                          aria-label="Next report"
                         >
                           Next →
                         </button>
