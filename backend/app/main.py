@@ -14,6 +14,12 @@ from .routes import auth, alerts, reports, cron, sf311_auth, admin
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Create FastAPI app
+app = FastAPI(
+    title=settings.APP_NAME,
+    description="Automated 311 alerts via SMS",
+    version="1.0.0",
+)
 
 # Middleware to add request ID for debugging
 @app.middleware("http")
@@ -24,13 +30,6 @@ async def add_request_id(request: Request, call_next):
     response = await call_next(request)
     response.headers["x-request-id"] = request_id
     return response
-
-# Create FastAPI app
-app = FastAPI(
-    title=settings.APP_NAME,
-    description="Automated 311 alerts via SMS",
-    version="1.0.0",
-)
 
 # CORS middleware (for Next.js frontend)
 # Restrict to actual frontend URLs in production
