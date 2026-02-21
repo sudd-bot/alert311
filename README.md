@@ -29,7 +29,7 @@ alert311/
 - FastAPI REST API running on Vercel serverless
 - PostgreSQL database (Neon)
 - Twilio integration (verification + SMS)
-- SF 311 API integration ready (OAuth pending)
+- SF 311 API integration active (system tokens with auto-refresh)
 - Vercel Cron jobs for automated polling
 - Database indexing for performance
 - Comprehensive logging and monitoring
