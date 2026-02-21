@@ -18,6 +18,7 @@ const ibmPlex = IBM_Plex_Sans({
 export const metadata: Metadata = {
   title: "Alert311 - SF 311 Report Alerts",
   description: "Get instant SMS alerts for 311 reports in San Francisco",
+  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
