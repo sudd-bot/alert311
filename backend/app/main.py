@@ -17,18 +17,65 @@ logger = logging.getLogger(__name__)
 # Create FastAPI app
 app = FastAPI(
     title=settings.APP_NAME,
-    description="Automated 311 alerts via SMS",
+    description="""
+    ## Alert311 API
+
+    Automated SMS alerts when specific 311 reports are filed in San Francisco.
+
+    ### Authentication
+    Currently uses phone number as a simple identifier. Phone verification is required before creating alerts.
+
+    ### Rate Limits
+    - Twilio API: 1 verification code per 5 minutes per number
+    - SF 311 API: Shared system token with automatic refresh
+
+    ### Endpoints
+    - **Auth**: Register and verify phone numbers
+    - **Alerts**: Create, list, update, and delete alerts
+    - **Reports**: Get nearby 311 reports and stored reports
+    - **Health**: System health monitoring
+    """,
     version="1.0.0",
+    contact={
+        "name": "Alert311",
+        "url": "https://alert311-ui.vercel.app",
+    },
+    license_info={
+        "name": "MIT",
+        "url": "https://opensource.org/licenses/MIT",
+    },
 )
 
-# Middleware to add request ID for debugging
+# Middleware to add request ID for debugging and cache headers for performance
 @app.middleware("http")
-async def add_request_id(request: Request, call_next):
-    """Add a unique request ID to each request for debugging and tracing."""
+async def add_request_id_and_cache_headers(request: Request, call_next):
+    """
+    Add a unique request ID to each request for debugging and tracing.
+    Add appropriate cache headers for GET requests to improve performance.
+    """
     request_id = request.headers.get("x-request-id") or str(uuid.uuid4())
     request.state.request_id = request_id
     response = await call_next(request)
     response.headers["x-request-id"] = request_id
+
+    # Add cache headers for GET requests
+    # Safe caching strategy: short cache for dynamic data, longer for static data
+    if request.method == "GET" and response.status_code == 200:
+        path = request.url.path
+
+        # Static / metadata endpoints - longer cache (5 minutes)
+        if path in ["/", "/health", "/docs", "/openapi.json"]:
+            response.headers["Cache-Control"] = "public, max-age=300"
+
+        # Dynamic data endpoints - very short cache (30 seconds) to reduce duplicate requests
+        # while keeping data relatively fresh
+        elif path.startswith("/reports/nearby") or path.startswith("/alerts"):
+            response.headers["Cache-Control"] = "public, max-age=30, s-maxage=60"
+
+        # User-specific data - private cache (1 minute)
+        elif path.startswith("/auth/me") or path.startswith("/alerts/") and path.count("/") == 3:
+            response.headers["Cache-Control"] = "private, max-age=60"
+
     return response
 
 # CORS middleware (for Next.js frontend)
