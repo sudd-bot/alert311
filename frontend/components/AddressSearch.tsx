@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useToast } from './Toast';
+import { SF_BOUNDS } from '@/lib/constants';
 
 interface AddressSearchProps {
   onLocationSelect: (address: string, lat: number, lng: number) => void;
@@ -75,14 +76,6 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        
-        // Check if within SF bounds
-        const SF_BOUNDS = {
-          minLng: -122.52,
-          maxLng: -122.35,
-          minLat: 37.70,
-          maxLat: 37.83,
-        };
 
         if (
           longitude < SF_BOUNDS.minLng ||

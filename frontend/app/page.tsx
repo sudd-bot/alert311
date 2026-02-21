@@ -8,16 +8,9 @@ import AlertPanel, { type AlertCreatedData } from '@/components/AlertPanel';
 import ReportsPanel, { type Report } from '@/components/ReportsPanel';
 import MapControls from '@/components/MapControls';
 import { formatDistance, formatDate, formatAddress } from '@/lib/format';
+import { SF_CENTER, SF_BOUNDS } from '@/lib/constants';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
-const SF_CENTER = { lat: 37.7749, lng: -122.4194 };
-
-const SF_BOUNDS = {
-  minLng: -122.52,
-  maxLng: -122.35,
-  minLat: 37.70,
-  maxLat: 37.83,
-};
 
 export default function Home() {
   const mapRef = useRef<MapRef>(null);
