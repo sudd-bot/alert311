@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { DM_Sans, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/Toast";
+import { generateJsonLd } from "./structured-data";
 
 const dmSans = DM_Sans({ 
   subsets: ["latin"],
@@ -54,6 +55,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(generateJsonLd()) }}
+        />
+      </head>
       <body className={`${dmSans.variable} ${ibmPlex.variable} font-body antialiased`}>
         <ToastProvider>
           {children}
