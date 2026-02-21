@@ -150,6 +150,7 @@ async def health():
     from .core.database import SessionLocal
     from sqlalchemy import text
     from .services.token_manager import TokenManager
+    from .models.system_config import SystemConfig
 
     db_status = "unknown"
     try:
@@ -162,13 +163,16 @@ async def health():
         logger.warning(f"Database health check failed: {e}")
         db_status = "disconnected"
 
-    # Check SF311 token availability (non-blocking for health check)
+    # Check SF311 token availability (fast check - just verify config exists)
     sf311_status = "unknown"
     try:
         db = SessionLocal()
-        token = await TokenManager.get_system_token(db)
+        from .services.token_manager import SYSTEM_TOKEN_KEY
+        config = db.query(SystemConfig).filter(
+            SystemConfig.key == SYSTEM_TOKEN_KEY
+        ).first()
         db.close()
-        sf311_status = "available" if token else "not_initialized"
+        sf311_status = "available" if config else "not_initialized"
     except Exception as e:
         logger.warning(f"SF311 token health check failed: {e}")
         sf311_status = "error"
