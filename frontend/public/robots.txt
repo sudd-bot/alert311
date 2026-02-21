@@ -1,0 +1,12 @@
+# Alert311 robots.txt
+# Allow search engines to crawl the main page
+
+User-agent: *
+Allow: /
+
+# Disallow Next.js internal routes
+Disallow: /_next/
+Disallow: /api/
+
+# Sitemap (will be added when custom domain is set up)
+# Sitemap: https://www.alert311.com/sitemap.xml
