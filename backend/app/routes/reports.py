@@ -259,9 +259,35 @@ async def get_nearby_reports(
         return [r["report"] for r in reports[:limit]]
         
     except urllib.error.HTTPError as e:
-        raise HTTPException(status_code=e.code, detail=f"SF 311 API error: {e.reason}")
+        # Provide more user-friendly error message for SF311 API failures
+        if e.code >= 500:
+            # Server error on SF311 side - likely temporary
+            logger.error(f"SF 311 API server error: {e.code} - {e.reason}")
+            raise HTTPException(
+                status_code=503,
+                detail="San Francisco 311 service is temporarily unavailable. Please try again in a moment."
+            )
+        elif e.code == 401:
+            # Token expired or invalid
+            logger.error(f"SF 311 API authentication error: {e.reason}")
+            raise HTTPException(
+                status_code=503,
+                detail="Unable to connect to SF 311 service. Please try again in a moment."
+            )
+        else:
+            # Other HTTP errors
+            logger.error(f"SF 311 API error: {e.code} - {e.reason}")
+            raise HTTPException(status_code=e.code, detail=f"SF 311 API error: {e.reason}")
+    except urllib.error.URLError as e:
+        # Network/connectivity error
+        logger.error(f"SF 311 API network error: {e.reason}")
+        raise HTTPException(
+            status_code=503,
+            detail="Unable to connect to San Francisco 311 service. Please check your connection and try again."
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching reports: {str(e)}")
+        logger.error(f"Unexpected error fetching reports: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error fetching reports. Please try again.")
 
 
 @router.get("", response_model=List[ReportResponse])

@@ -16,20 +16,36 @@ class AccountType(str, Enum):
 
 
 class UserRegister(BaseModel):
-    phone: str = Field(..., description="Phone number in E.164 format (e.g., +16464171584)")
+    phone: str = Field(..., description="Phone number (e.g., 646-417-1584)")
     
     @field_validator('phone')
     @classmethod
     def validate_phone(cls, v: str) -> str:
-        """Validate phone number is in E.164 format."""
-        # E.164 format: +[country code][number]
-        # Example: +16464171584
-        if not re.match(r'^\+[1-9]\d{1,14}$', v):
-            raise ValueError(
-                "Phone number must be in E.164 format (e.g., +16464171584). "
-                "Include country code with + prefix."
-            )
-        return v
+        """
+        Normalize and validate phone number to E.164 format.
+        Handles inputs like "646-417-1584", "(646) 417-1584", "6464171584",
+        "16464171584", "+16464171584".
+        """
+        v = v.strip()
+        digits = re.sub(r'\D', '', v)
+
+        # Already has a + country code prefix — return as +DIGITS
+        if v.startswith('+') and len(digits) >= 7:
+            return f"+{digits}"
+
+        # 10-digit US number (no country code)
+        if len(digits) == 10:
+            return f"+1{digits}"
+
+        # 11-digit number starting with 1 (US with country code, no +)
+        if len(digits) == 11 and digits.startswith('1'):
+            return f"+{digits}"
+
+        # Invalid format
+        raise ValueError(
+            "Invalid phone number format. Please enter a 10-digit US number "
+            "(e.g., 646-417-1584 or (646) 417-1584)."
+        )
 
 
 class UserVerify(BaseModel):
@@ -51,7 +67,7 @@ class UserResponse(BaseModel):
 # ============ Alert Schemas ============
 
 class AlertCreate(BaseModel):
-    address: str = Field(..., min_length=5, description="Street address in San Francisco")
+    address: str = Field(..., min_length=5, max_length=500, description="Street address in San Francisco")
     report_type_id: Optional[str] = Field(None, description="311 ticket type ID (defaults to parking on sidewalk)")
     # Optional pre-computed coordinates from the frontend (map geocoder).
     # When provided, the backend skips the geocoding API call — faster and cheaper.
@@ -65,6 +81,9 @@ class AlertCreate(BaseModel):
         v = v.strip()
         if not v:
             raise ValueError("Address cannot be empty")
+        # Remove excessive whitespace within the address
+        import re
+        v = re.sub(r'\s+', ' ', v)
         return v
 
 
