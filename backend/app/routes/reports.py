@@ -1,7 +1,7 @@
 """
 Report viewing routes.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from typing import Annotated, List, Optional
 from pydantic import BaseModel
@@ -56,6 +56,7 @@ class SF311Report(BaseModel):
 
 @router.get("/nearby", response_model=List[SF311Report])
 async def get_nearby_reports(
+    request: Request,
     lat: float,
     lng: float,
     limit: Annotated[int, Query(ge=1, le=50)] = 10,
@@ -67,6 +68,13 @@ async def get_nearby_reports(
     Combines both recently opened and recently closed tickets.
     If address is provided, filters to only show tickets at or very near that address.
     """
+    import time
+
+    request_id = getattr(request.state, "request_id", "unknown")
+    start_time = time.time()
+
+    logger.info(f"[{request_id}] Fetching nearby reports: lat={lat}, lng={lng}, limit={limit}, address={address}")
+
     try:
         # Ensure system token exists (auto-initialize if missing)
         await TokenManager.ensure_system_token_exists(db)
@@ -256,37 +264,40 @@ async def get_nearby_reports(
             x["report"].distance_meters if x["report"].distance_meters is not None else float('inf'),
             -(x["date_obj"].timestamp() if x["date_obj"] else 0),
         ))
-        return [r["report"] for r in reports[:limit]]
+        result = [r["report"] for r in reports[:limit]]
+        elapsed_ms = (time.time() - start_time) * 1000
+        logger.info(f"[{request_id}] Returning {len(result)} reports in {elapsed_ms:.0f}ms")
+        return result
         
     except urllib.error.HTTPError as e:
         # Provide more user-friendly error message for SF311 API failures
         if e.code >= 500:
             # Server error on SF311 side - likely temporary
-            logger.error(f"SF 311 API server error: {e.code} - {e.reason}")
+            logger.error(f"[{request_id}] SF 311 API server error: {e.code} - {e.reason}")
             raise HTTPException(
                 status_code=503,
                 detail="San Francisco 311 service is temporarily unavailable. Please try again in a moment."
             )
         elif e.code == 401:
             # Token expired or invalid
-            logger.error(f"SF 311 API authentication error: {e.reason}")
+            logger.error(f"[{request_id}] SF 311 API authentication error: {e.reason}")
             raise HTTPException(
                 status_code=503,
                 detail="Unable to connect to SF 311 service. Please try again in a moment."
             )
         else:
             # Other HTTP errors
-            logger.error(f"SF 311 API error: {e.code} - {e.reason}")
+            logger.error(f"[{request_id}] SF 311 API error: {e.code} - {e.reason}")
             raise HTTPException(status_code=e.code, detail=f"SF 311 API error: {e.reason}")
     except urllib.error.URLError as e:
         # Network/connectivity error
-        logger.error(f"SF 311 API network error: {e.reason}")
+        logger.error(f"[{request_id}] SF 311 API network error: {e.reason}")
         raise HTTPException(
             status_code=503,
             detail="Unable to connect to San Francisco 311 service. Please check your connection and try again."
         )
     except Exception as e:
-        logger.error(f"Unexpected error fetching reports: {str(e)}", exc_info=True)
+        logger.error(f"[{request_id}] Unexpected error fetching reports: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Error fetching reports. Please try again.")
 
 

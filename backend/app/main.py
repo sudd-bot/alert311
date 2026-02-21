@@ -1,9 +1,10 @@
 """
 Alert311 FastAPI application.
 """
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+import uuid
 
 from .core.config import settings
 from .core.database import init_db
@@ -12,6 +13,17 @@ from .routes import auth, alerts, reports, cron, sf311_auth, admin
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+# Middleware to add request ID for debugging
+@app.middleware("http")
+async def add_request_id(request: Request, call_next):
+    """Add a unique request ID to each request for debugging and tracing."""
+    request_id = request.headers.get("x-request-id") or str(uuid.uuid4())
+    request.state.request_id = request_id
+    response = await call_next(request)
+    response.headers["x-request-id"] = request_id
+    return response
 
 # Create FastAPI app
 app = FastAPI(
