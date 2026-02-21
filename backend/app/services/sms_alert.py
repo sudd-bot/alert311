@@ -45,23 +45,51 @@ class SMSAlertService:
             return False
     
     def _format_alert_message(self, report_data: Dict[str, Any]) -> str:
-        """Format 311 report data into SMS message."""
-        ticket_type = report_data.get("ticket_type_name", "Unknown")
-        address = report_data.get("address", "Unknown location")
-        description = report_data.get("description", "No description")
-        report_id = report_data.get("id", "")
-        created_at = report_data.get("created_at", "")
-        
-        message = f"🚨 Alert311: New {ticket_type} report\n\n"
+        """
+        Format 311 report data into SMS message.
+
+        Handles both formats from SF 311 API:
+        - GraphQL tickets: { ticketType: { name }, location: { address }, submittedAt, publicId, status }
+        - Legacy format: { ticket_type_name, address, description, created_at, id }
+        """
+        # Extract type name from nested ticketType object (GraphQL) or direct field (legacy)
+        ticket_type_obj = report_data.get("ticketType", {})
+        if isinstance(ticket_type_obj, dict):
+            ticket_type = ticket_type_obj.get("name", "Unknown")
+        else:
+            ticket_type = ticket_type_obj if ticket_type_obj else report_data.get("ticket_type_name", "Unknown")
+
+        # Extract address from nested location object (GraphQL) or direct field (legacy)
+        location_obj = report_data.get("location", {})
+        if isinstance(location_obj, dict):
+            address = location_obj.get("address", "Unknown location")
+        else:
+            address = location_obj if location_obj else report_data.get("address", "Unknown location")
+
+        # Extract ID from publicId (GraphQL) or id (legacy)
+        report_id = report_data.get("publicId") or report_data.get("id", "")
+        created_at = report_data.get("submittedAt") or report_data.get("openedAt") or report_data.get("created_at", "")
+        status = report_data.get("status", "").lower()
+
+        message = f"🚨 Alert311: New {ticket_type}\n\n"
         message += f"📍 {address}\n"
-        message += f"📝 {description}\n"
-        
+
+        # Add status if available
+        if status:
+            status_label = "OPEN" if status == "open" else status.upper()
+            message += f"⚠️ Status: {status_label}\n"
+
         if created_at:
             message += f"🕐 {created_at}\n"
-        
+
         if report_id:
-            message += f"\nReport ID: {report_id}"
-        
+            message += f"\nCase #{report_id}"
+        else:
+            # Fallback to internal ID
+            internal_id = report_data.get("id")
+            if internal_id:
+                message += f"\nID: {internal_id}"
+
         return message
 
 
