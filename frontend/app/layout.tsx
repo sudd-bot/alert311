@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   title: "Alert311 - SF 311 Report Alerts",
   description: "Get instant SMS alerts for 311 reports in San Francisco",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
