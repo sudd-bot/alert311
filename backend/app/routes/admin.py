@@ -1,13 +1,14 @@
 """
-Admin routes for manual operations.
+Admin routes for manual operations and stats.
 """
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from pydantic import BaseModel
 import json
 
 from ..core.database import get_db
-from ..models import SystemConfig
+from ..models import SystemConfig, User, Alert, Report
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -62,3 +63,55 @@ async def set_system_token(token_data: SetTokenRequest, db: Session = Depends(ge
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error setting token: {str(e)}")
+
+
+@router.get("/stats")
+async def get_stats(db: Session = Depends(get_db)):
+    """
+    Get system statistics.
+    Returns aggregate data about users, alerts, and reports.
+    """
+    try:
+        # User stats
+        total_users = db.query(func.count(User.id)).scalar()
+        verified_users = db.query(func.count(User.id)).filter(User.verified == True).scalar()
+
+        # Alert stats
+        total_alerts = db.query(func.count(Alert.id)).scalar()
+        active_alerts = db.query(func.count(Alert.id)).filter(Alert.active == True).scalar()
+
+        # Report stats (stored reports in database)
+        total_reports = db.query(func.count(Report.id)).scalar()
+
+        # Alert activity (alerts per user)
+        avg_alerts_per_user = 0
+        if total_users > 0:
+            avg_alerts_per_user = round(total_alerts / total_users, 2)
+
+        # Active alert rate
+        active_alert_rate = 0
+        if total_alerts > 0:
+            active_alert_rate = round((active_alerts / total_alerts) * 100, 1)
+
+        return {
+            "users": {
+                "total": total_users,
+                "verified": verified_users,
+                "unverified": total_users - verified_users,
+                "verified_rate": round((verified_users / total_users * 100), 1) if total_users > 0 else 0,
+            },
+            "alerts": {
+                "total": total_alerts,
+                "active": active_alerts,
+                "inactive": total_alerts - active_alerts,
+                "avg_per_user": avg_alerts_per_user,
+                "active_rate": active_alert_rate,
+            },
+            "reports": {
+                "total_stored": total_reports,
+            },
+        }
+
+    except Exception as e:
+        # Return error but with available stats if partial data is retrieved
+        raise HTTPException(status_code=500, detail=f"Error getting stats: {str(e)}")

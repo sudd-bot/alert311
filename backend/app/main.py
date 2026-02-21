@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 import uuid
+import time
 
 from .core.config import settings
 from .core.database import init_db
@@ -52,11 +53,20 @@ async def add_request_id_and_cache_headers(request: Request, call_next):
     """
     Add a unique request ID to each request for debugging and tracing.
     Add appropriate cache headers for GET requests to improve performance.
+    Add response time header for observability and performance monitoring.
     """
     request_id = request.headers.get("x-request-id") or str(uuid.uuid4())
     request.state.request_id = request_id
+
+    # Track request start time for response time measurement
+    start_time = time.time()
+
     response = await call_next(request)
+
+    # Add response time header (in milliseconds, rounded to 2 decimal places)
+    response_time_ms = round((time.time() - start_time) * 1000, 2)
     response.headers["x-request-id"] = request_id
+    response.headers["x-response-time-ms"] = str(response_time_ms)
 
     # Add cache headers for GET requests
     # Safe caching strategy: short cache for dynamic data, longer for static data
