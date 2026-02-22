@@ -156,40 +156,48 @@ async def health():
     """
     Health check for monitoring.
     Includes database connectivity and SF311 token availability.
+    Uses simplified checks to avoid connection pool issues in serverless environments.
     """
-    from .core.database import SessionLocal
+    from .core.database import get_db
     from sqlalchemy import text
-    from .services.token_manager import TokenManager
     from .models.system_config import SystemConfig
+    from .services.token_manager import SYSTEM_TOKEN_KEY
+    from fastapi import Depends
 
     db_status = "unknown"
-    try:
-        # Try to connect to database
-        db = SessionLocal()
-        db.execute(text("SELECT 1"))
-        db.close()
-        db_status = "connected"
-    except Exception as e:
-        logger.warning(f"Database health check failed: {e}")
-        db_status = "disconnected"
-
-    # Check SF311 token availability (fast check - just verify config exists)
     sf311_status = "unknown"
+    
     try:
-        db = SessionLocal()
-        from .services.token_manager import SYSTEM_TOKEN_KEY
-        config = db.query(SystemConfig).filter(
-            SystemConfig.key == SYSTEM_TOKEN_KEY
-        ).first()
-        db.close()
-        sf311_status = "available" if config else "not_initialized"
-    except Exception as e:
-        logger.warning(f"SF311 token health check failed: {e}")
-        sf311_status = "error"
+        # Use a single database session for all checks (more efficient)
+        db_gen = get_db()
+        db = next(db_gen)
+        
         try:
-            db.close()
-        except:
-            pass
+            # Check database connectivity
+            db.execute(text("SELECT 1"))
+            db_status = "connected"
+            
+            # Check SF311 token availability (fast check - just verify config exists)
+            config = db.query(SystemConfig).filter(
+                SystemConfig.key == SYSTEM_TOKEN_KEY
+            ).first()
+            sf311_status = "available" if config else "not_initialized"
+            
+        except Exception as inner_e:
+            logger.warning(f"Health check query failed: {inner_e}")
+            db_status = "error"
+            sf311_status = "error"
+        finally:
+            # Ensure cleanup
+            try:
+                db_gen.close()
+            except:
+                pass
+                
+    except Exception as e:
+        logger.warning(f"Health check failed to get db session: {e}")
+        db_status = "disconnected"
+        sf311_status = "error"
 
     return {
         "status": "healthy",
