@@ -1,0 +1,7 @@
+# Alert311 - San Francisco 311 Alerts
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /cron/
+
+Sitemap: https://backend-sigma-nine-42.vercel.app/sitemap.xml

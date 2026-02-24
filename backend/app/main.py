@@ -3,9 +3,12 @@ Alert311 FastAPI application.
 """
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import logging
 import uuid
 import time
+from pathlib import Path
 
 from .core.config import settings
 from .core.database import init_db
@@ -112,6 +115,24 @@ app.include_router(reports.router)
 app.include_router(cron.router)
 app.include_router(sf311_auth.router)
 app.include_router(admin.router)
+
+# Serve static files for SEO and PWA
+static_dir = Path(__file__).parent / "static"
+
+@app.get("/robots.txt")
+async def robots():
+    """Serve robots.txt for SEO"""
+    return FileResponse(static_dir / "robots.txt", media_type="text/plain")
+
+@app.get("/sitemap.xml")
+async def sitemap():
+    """Serve sitemap.xml for SEO"""
+    return FileResponse(static_dir / "sitemap.xml", media_type="application/xml")
+
+@app.get("/manifest.json")
+async def manifest():
+    """Serve manifest.json for PWA"""
+    return FileResponse(static_dir / "manifest.json", media_type="application/json")
 
 
 @app.on_event("startup")
