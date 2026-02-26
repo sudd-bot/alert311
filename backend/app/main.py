@@ -191,7 +191,7 @@ async def health():
 
     try:
         # Check Twilio configuration (no API call, just verify credentials are set)
-        from ..core.config import settings
+        from .core.config import settings
         if settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN and settings.TWILIO_VERIFY_SERVICE_SID:
             twilio_status = "configured"
         else:
