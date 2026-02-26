@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Image from 'next/image';
 import { formatDistance, formatDate, formatAddress } from '@/lib/format';
 import { useToast } from './Toast';
 
@@ -134,7 +135,7 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
     } finally {
       setIsLoading(false);
     }
-  }, [lat, lng, addToast]);
+  }, [lat, lng, addToast, onReportsLoaded]);
 
   useEffect(() => {
     fetchReports();
@@ -283,11 +284,12 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
                     <div className="relative h-11 w-11 shrink-0 rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center text-xl">
                       <span aria-hidden="true">{getReportIcon(report.type)}</span>
                       {report.photo_url && (
-                        <img
+                        <Image
                           src={report.photo_url}
                           alt={report.type}
+                          width={44}
+                          height={44}
                           loading="lazy"
-                          decoding="async"
                           className="absolute inset-0 h-full w-full object-cover"
                           onError={(e) => { e.currentTarget.style.display = 'none'; }}
                         />
@@ -442,11 +444,12 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
                     <div className="relative h-12 w-12 shrink-0 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-gray-100 flex items-center justify-center text-xl">
                       <span aria-hidden="true">{getReportIcon(report.type)}</span>
                       {report.photo_url && (
-                        <img
+                        <Image
                           src={report.photo_url}
                           alt={report.type}
+                          width={48}
+                          height={48}
                           loading="lazy"
-                          decoding="async"
                           className="absolute inset-0 h-full w-full object-cover"
                           onError={(e) => { e.currentTarget.style.display = 'none'; }}
                         />
