@@ -2,7 +2,6 @@
  * JSON-LD structured data for Alert311
  * Improves SEO by providing search engines with structured information about the app
  */
-import type { Metadata } from "next";
 
 export function generateJsonLd(): object {
   return {

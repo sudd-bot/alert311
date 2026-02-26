@@ -6,6 +6,15 @@ const nextConfig: NextConfig = {
   experimental: {
     // turbo: false, // Uncomment if needed
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'spot-sf-res.cloudinary.com',
+        pathname: '/**',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

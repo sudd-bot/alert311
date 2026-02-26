@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import Image from 'next/image';
 import MapboxMap, { Marker, Popup, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import AddressSearch from '@/components/AddressSearch';
@@ -281,11 +282,12 @@ export default function Home() {
               >
                 <div className="bg-white rounded-xl shadow-xl ring-1 ring-black/10 overflow-hidden min-w-[200px] max-w-[240px]">
                   {activeReport.photo_url && (
-                    <img
+                    <Image
                       src={activeReport.photo_url}
                       alt={activeReport.type}
+                      width={240}
+                      height={112}
                       loading="lazy"
-                      decoding="async"
                       className="w-full h-28 object-cover"
                       onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     />
