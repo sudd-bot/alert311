@@ -278,7 +278,7 @@ export default function AlertPanel({
             </div>
             <h2 className="font-display text-2xl font-bold text-gray-900">Alert Created!</h2>
             <p className="mt-2 text-gray-600">
-              You'll receive SMS alerts for{' '}
+              You&apos;ll receive SMS alerts for{' '}
               <span className="font-semibold">
                 {REPORT_TYPES.find((t) => t.id === selectedReportType)?.name}
               </span>{' '}
@@ -361,7 +361,7 @@ export default function AlertPanel({
                     />
                   </div>
                   <p className="text-xs text-gray-500">
-                    US numbers accepted in any format — we'll send a verification code via SMS
+                    US numbers accepted in any format — we&apos;ll send a verification code via SMS
                   </p>
                   <button
                     onClick={sendVerification}
@@ -496,7 +496,7 @@ export default function AlertPanel({
                   ) : (
                     <div className="rounded-xl bg-amber-50 p-4">
                       <p className="text-sm text-amber-800">
-                        <span className="font-semibold">You'll receive SMS alerts</span> when{' '}
+                        <span className="font-semibold">You&apos;ll receive SMS alerts</span> when{' '}
                         <span className="font-semibold">
                           {REPORT_TYPES.find((t) => t.id === selectedReportType)?.name}
                         </span>{' '}
