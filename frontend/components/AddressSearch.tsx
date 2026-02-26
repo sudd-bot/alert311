@@ -214,6 +214,9 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
           autoCorrect="off"
           autoCapitalize="off"
           spellCheck="false"
+          aria-autocomplete="list"
+          aria-controls="address-search-results"
+          aria-activedescendant={highlightedIndex >= 0 ? `result-${highlightedIndex}` : undefined}
         />
         {/* Clear button — appears when there's a query; clears input + results + sessionStorage */}
         {query && !isLoading && (
@@ -264,14 +267,21 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
 
       {/* Results Dropdown */}
       {showResults && results.length > 0 && (
-        <div className="absolute top-14 left-0 right-0 mt-2 rounded-xl bg-white/95 backdrop-blur-xl overflow-hidden shadow-2xl ring-1 ring-black/10 animate-slideDown z-50">
+        <div
+          id="address-search-results"
+          role="listbox"
+          className="absolute top-14 left-0 right-0 mt-2 rounded-xl bg-white/95 backdrop-blur-xl overflow-hidden shadow-2xl ring-1 ring-black/10 animate-slideDown z-50"
+        >
           <div className="max-h-64 overflow-y-auto scrollbar-hide">
             {results.map((feature, index) => (
               <button
+                id={`result-${index}`}
                 key={feature.id || index}
                 onClick={() => handleSelect(feature)}
                 onMouseEnter={() => setHighlightedIndex(index)}
                 onMouseLeave={() => setHighlightedIndex(-1)}
+                role="option"
+                aria-selected={highlightedIndex === index}
                 className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors border-b border-gray-100 last:border-b-0 ${
                   highlightedIndex === index ? 'bg-gray-100' : 'hover:bg-gray-50'
                 }`}
@@ -288,6 +298,11 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
                     {feature.place_name.replace(`${feature.text}, `, '')}
                   </div>
                 </div>
+                {highlightedIndex === index && (
+                  <svg className="h-4 w-4 shrink-0 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" />
+                  </svg>
+                )}
               </button>
             ))}
           </div>
@@ -298,6 +313,7 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
       {showResults && query.length >= 3 && results.length === 0 && !isLoading && (
         <div className="absolute top-14 left-0 right-0 mt-2 rounded-xl bg-white/95 backdrop-blur-xl p-4 text-center shadow-xl ring-1 ring-black/10 animate-slideDown">
           <p className="text-sm text-gray-500">No addresses found in San Francisco</p>
+          <p className="text-xs text-gray-400 mt-1">Try a shorter search or use the location button</p>
         </div>
       )}
     </div>
