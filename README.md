@@ -161,6 +161,42 @@ The project includes automated hourly health checks and incremental improvements
 
 See `STATUS.md` for detailed progress logs.
 
+## Troubleshooting
+
+### Backend Issues
+
+**Health check shows "database": "error"**
+- This can happen on cold starts in serverless environments
+- Subsequent health checks usually pass
+- All functional endpoints work correctly even if health check shows transient errors
+
+**Verification codes not sending**
+- Check Twilio credentials in Vercel environment variables
+- Ensure `TWILIO_VERIFY_SERVICE_SID` is configured
+- Check Twilio service status at https://status.twilio.com
+
+**SF 311 API errors**
+- Check that system tokens are initialized: `python scripts/get_311_tokens.py`
+- Tokens auto-refresh every 12 hours via cron
+- Check logs in Vercel dashboard for specific error messages
+
+### Frontend Issues
+
+**Map not displaying**
+- Check `NEXT_PUBLIC_MAPBOX_TOKEN` in Vercel environment variables
+- Ensure Mapbox token is valid and has access to map styles
+- Check browser console for API errors
+
+**Geocoding errors**
+- Geocoding uses OpenStreetMap/Nominatim (free, rate-limited)
+- If requests fail, ensure the address format is valid
+- Addresses are automatically scoped to San Francisco, CA
+
+**Alerts not creating**
+- Verify `NEXT_PUBLIC_API_URL` points to backend
+- Check browser console for error messages
+- Ensure phone number is verified before creating alerts
+
 ## Contributing
 
 This is a work in progress. See `STATUS.md` for current state and known issues.
