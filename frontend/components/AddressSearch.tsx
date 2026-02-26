@@ -4,6 +4,13 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useToast } from './Toast';
 import { SF_BOUNDS } from '@/lib/constants';
 
+interface MapboxFeature {
+  id?: string;
+  center: [number, number];
+  place_name: string;
+  text: string;
+}
+
 interface AddressSearchProps {
   onLocationSelect: (address: string, lat: number, lng: number) => void;
 }
@@ -13,7 +20,7 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
     // Pre-fill with last search so users don't retype after hitting "Back"
     try { return sessionStorage.getItem('alert311_last_query') ?? ''; } catch { return ''; }
   });
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<MapboxFeature[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
@@ -150,7 +157,7 @@ export default function AddressSearch({ onLocationSelect }: AddressSearchProps) 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSelect = (feature: any) => {
+  const handleSelect = (feature: MapboxFeature) => {
     const [lng, lat] = feature.center;
     const address = feature.place_name;
     
