@@ -176,7 +176,7 @@ async def root():
 async def health():
     """
     Health check for monitoring.
-    Includes database connectivity and SF311 token availability.
+    Includes database connectivity, SF311 token availability, and Twilio configuration.
     Uses simplified checks to avoid connection pool issues in serverless environments.
     """
     from .core.database import get_db
@@ -187,6 +187,19 @@ async def health():
 
     db_status = "unknown"
     sf311_status = "unknown"
+    twilio_status = "unknown"
+
+    try:
+        # Check Twilio configuration (no API call, just verify credentials are set)
+        from ..core.config import settings
+        if settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN and settings.TWILIO_VERIFY_SERVICE_SID:
+            twilio_status = "configured"
+        else:
+            twilio_status = "missing_credentials"
+
+    except Exception as e:
+        logger.warning(f"Twilio health check failed: {e}")
+        twilio_status = "error"
     
     try:
         # Use a single database session for all checks (more efficient)
@@ -223,5 +236,6 @@ async def health():
     return {
         "status": "healthy",
         "database": db_status,
-        "sf311_token": sf311_status
+        "sf311_token": sf311_status,
+        "twilio": twilio_status
     }
