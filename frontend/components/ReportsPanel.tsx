@@ -230,7 +230,7 @@ export default function ReportsPanel({ address, lat, lng, onCreateNew, onReports
               ) : hasError ? (
                 <div className="text-center py-8">
                   <div className="text-3xl mb-2" aria-hidden="true">⚠️</div>
-                  <p className="font-semibold text-gray-700 text-sm">Couldn&apos;t load reports
+                  <p className="font-semibold text-gray-700 text-sm">Couldn&apos;t load reports</p>
                   <p className="text-gray-500 text-xs mt-1">Check your connection and try again.</p>
                   <button
                     onClick={handleManualRefresh}
