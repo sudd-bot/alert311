@@ -141,7 +141,7 @@ Interactive docs available at:
 ## Report Types
 
 Available alert types in the app:
-- **Parking on Sidewalk** (ID: `963f1454-7c22-43be-aacb-3f34ae5d0dc7`)
+- **Blocked Driveway & Parking** (ID: `963f1454-7c22-43be-aacb-3f34ae5d0dc7`)
 - **Graffiti**
 - **Illegal Dumping**
 - **Homeless Encampment**
