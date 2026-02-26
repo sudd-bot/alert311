@@ -108,6 +108,10 @@ async def poll_311_reports(
                 )
                 db.add(new_report)
                 new_reports_count += 1
+                logger.info(
+                    f"[Alert {alert.id}] New report found for '{alert.address}' - "
+                    f"Report ID: {report_id}, Type: {report_data.get('ticketType', {}).get('name', 'Unknown')}"
+                )
             
             db.commit()
             
