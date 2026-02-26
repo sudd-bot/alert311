@@ -10017,3 +10017,14 @@ All set in Vercel for both projects:
 - ✅ **Import path fixed** - Corrected from `..core.config` to `.core.config`
 - 🎉 **Improvement complete** - Health check now monitors Twilio credential configuration
 
+
+
+**9:15 AM - API Validation Improvement** 🔧
+- ✅ **Added lat/lng range validation** - Reports API now validates latitude (-90 to 90) and longitude (-180 to 180)
+- ✅ **Better error messages** - Invalid coordinates now return clear FastAPI validation errors
+- ✅ **Deployed and tested** - Validation working correctly in production
+- ✅ **Non-breaking change** - Valid requests work exactly as before
+- 📝 **Test results:**
+  - Valid coords (37.7749, -122.4194): ✅ Accepted
+  - Invalid coords (999, -122.4194): ✅ Rejected with "Input should be less than or equal to 90"
+
