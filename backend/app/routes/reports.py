@@ -57,8 +57,8 @@ class SF311Report(BaseModel):
 @router.get("/nearby", response_model=List[SF311Report])
 async def get_nearby_reports(
     request: Request,
-    lat: float,
-    lng: float,
+    lat: Annotated[float, Query(ge=-90, le=90, description="Latitude (-90 to 90)")],
+    lng: Annotated[float, Query(ge=-180, le=180, description="Longitude (-180 to 180)")],
     limit: Annotated[int, Query(ge=1, le=50)] = 10,
     address: Optional[str] = None,
     db: Session = Depends(get_db)
