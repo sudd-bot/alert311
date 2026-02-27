@@ -3,6 +3,9 @@
 .hourly-check
 .consecutive-checks
 
+# Ignore temporary memory files created by cron job
+memory/*.md
+
 # Python
 __pycache__/
 *.py[cod]
