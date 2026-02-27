@@ -1,5 +1,7 @@
-# Ignore internal tracking files
+# Ignore internal tracking files (legacy - now tracked in STATUS.md)
 .last-check
+.hourly-check
+.consecutive-checks
 
 # Python
 __pycache__/
