@@ -8,5 +8,5 @@ Allow: /
 Disallow: /_next/
 Disallow: /api/
 
-# Sitemap (will be added when custom domain is set up)
-# Sitemap: https://www.alert311.com/sitemap.xml
+# Sitemap for current deployment
+Sitemap: https://alert311-ui.vercel.app/sitemap.xml
