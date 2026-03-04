@@ -1,6 +1,6 @@
 # Alert311 robots.txt
 # Allow search engines to crawl the main page
-# Last updated: 2026-03-03 5:00 PM PST
+# Last updated: 2026-03-04 4:00 AM PST
 
 User-agent: *
 Allow: /
