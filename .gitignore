@@ -20,15 +20,17 @@ ENV/
 # Node
 node_modules/
 .next/
-out/
+.out/
 .DS_Store
 
-# Environment
-.env
-.env.*
+# Environment (ignore all .env files except .env.example)
 .env.local
 .env.production
 .env.production.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
 backend/.env.to-add
 
 # IDE
