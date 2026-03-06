@@ -20,8 +20,8 @@ class Settings(BaseSettings):
         return self.DATABASE_URL or self.POSTGRES_URL or ""
     
     # 311 API (SF Spotmobile)
-    SF311_BASE_URL: str = "https://mobile311.sfgov.org"
-    SF311_CLIENT_ID: str = "KLHhIUu56qWPHrYA16MUvxBXaJbPoAmKDbFjDFhe"
+    SF311_BASE_URL: str = "https://san-francisco2-production.spotmobile.net"
+    SF311_CLIENT_ID: str = "60c3c1d3-0ebe-49f4-97a8-4f4272120366"
     SF311_REDIRECT_URI: str = "sf311://auth"
     SF311_SCOPE: str = "refresh_token read write openid"
     SF311_GRAPHQL_URL: str = "https://san-francisco2-production.spotmobile.net/graphql"
