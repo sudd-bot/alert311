@@ -612,3 +612,27 @@
   - Frontend major: Next.js 15.5.12 → 16.1.6, ESLint 9 → 10, @types/node 20 → 25
   - Backend minor/fastapi: All packages up-to-date ✅
 - 🎉 **MILESTONE:** 648 consecutive operational checks! System stable, ready for production use.
+
+## 2026-03-06 - Fixed SF311 API Authentication
+
+### Issue
+The SF 311 API was failing with "client not found" error using the old credentials:
+- Old base URL: https://mobile311.sfgov.org
+- Old client ID: KLHhIUu56qWPHrYA16MUvxBXaJbPoAmKDbFjDFhe
+
+### Solution
+Updated to use the working Spotmobile backend:
+- New base URL: https://san-francisco2-production.spotmobile.net
+- New client ID: 60c3c1d3-0ebe-49f4-97a8-4f4272120366
+
+### Changes Made
+- Updated `backend/app/core/config.py` with new SF 311 API credentials
+- Tested token acquisition successfully
+- Committed and deployed to production (https://backend-sigma-nine-42.vercel.app)
+- Verified API is returning live SF 311 reports
+
+### Status
+✅ Backend deployed and healthy
+✅ SF311 token available
+✅ API returning real data (verified reports from Mar 4, 2026)
+
